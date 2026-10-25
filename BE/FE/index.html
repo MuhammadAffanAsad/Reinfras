@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="description" content="Reinfras — platform pelaporan infrastruktur publik yang terbuka untuk semua. Laporkan kerusakan, pantau penanganannya sampai selesai." />
+  <title>Reinfras | Platform Pengaduan Masyarakat!</title>
+
+  <!-- Google Fonts: Inter (UI) + JetBrains Mono (data labels) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link href="./vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Tailwind CSS Compiled -->
+  <link rel="stylesheet" href="./output.css" />
+
+  <style>
+    html { scroll-behavior: smooth; }
+    /* Cegah halaman melebar di HP akibat animasi AOS yang bergeser horizontal */
+    .page-wrap { overflow-x: hidden; overflow-x: clip; }
+
+    /* Tab Tentang/Visi/Misi: pil putih yang bergeser mengikuti tab aktif */
+    #tab-indicator {
+      position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none;
+      border-radius: .25rem; background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .08);
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1), width .3s cubic-bezier(.4, 0, .2, 1), height .3s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    /* FAQ: transisi halus untuk warna latar, bayangan, dan panah */
+    #faq details { transition: background-color .3s ease, box-shadow .3s ease; }
+    #faq details[data-state="open"] { background-color: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .05); }
+    #faq details summary svg { transition: transform .3s cubic-bezier(.4, 0, .2, 1); }
+    #faq details[data-state="open"] summary svg { transform: rotate(180deg); }
+
+    /* ===== Menu hamburger (mobile) ===== */
+    .burger-line { display:block; height:2.5px; width:26px; border-radius:9999px; background:#fff; }
+    #mobile-menu {
+      position: fixed; inset: 0; z-index: 60; background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .3s ease, visibility 0s linear .3s;
+    }
+    #mobile-menu.is-open {
+      opacity: 1; visibility: visible; pointer-events: auto;
+      transition: opacity .3s ease, visibility 0s;
+    }
+    #mobile-menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .35s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    #mobile-menu.is-open li { opacity: 1; transform: none; }
+    #mobile-menu.is-open li:nth-child(1) { transition-delay: .08s; }
+    #mobile-menu.is-open li:nth-child(2) { transition-delay: .14s; }
+    #mobile-menu.is-open li:nth-child(3) { transition-delay: .20s; }
+    #mobile-menu.is-open li:nth-child(4) { transition-delay: .26s; }
+    @media (prefers-reduced-motion: reduce) {
+      #mobile-menu, #mobile-menu li { transition: none !important; }
+    }
+    @media (min-width: 768px) { #mobile-menu { display: none; } }
+    @media (max-width: 767px) {
+      [data-aos="fade-left"], [data-aos="fade-right"] { transform: translate3d(0, 24px, 0); }
+    }
+  </style>
+</head>
+
+<body class="bg-white font-sans text-slate-900 antialiased">
+<div class="page-wrap">
+
+  <!-- ============================== NAVBAR ============================== -->
+  <header data-aos="fade-down" id="navbar" class="inset-x-0 z-30 bg-white/5 backdrop-blur-lg border-b border-white/10 bg-transparent absolute">
+    <div class="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <a href="./index.html" class="flex items-center">
+        <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logo.png')"></div>
+        <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+      </a>
+
+      <div class="hidden w-full justify-center md:flex">
+        <nav aria-label="Navigasi utama" class="hidden md:block">
+          <ul class="flex items-center gap-1">
+            <li><a data-nav-link href="./index.html" class="block rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white">Beranda</a></li>
+            <li><a data-nav-link href="./feed.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Feed Laporan</a></li>
+            <li><a data-nav-link href="./laporan.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Kirim Laporan</a></li>
+            <li><a data-nav-link href="#kontak" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Kontak Kami</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Tombol hamburger (hanya tampil di mobile) -->
+      <button id="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu"
+        class="ml-auto flex h-11 w-11 shrink-0 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full md:hidden">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================== MENU MOBILE (OVERLAY) ============================== -->
+  <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" aria-hidden="true" inert>
+    <button id="menu-close" type="button" aria-label="Tutup menu"
+      class="absolute right-4 top-6 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-slate-200/80 text-slate-700/75 transition-colors hover:bg-slate-300 sm:right-6">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+    <nav aria-label="Navigasi seluler">
+      <ul class="flex flex-col items-center gap-9 text-center">
+        <li><a data-mobile-link href="./index.html" class="font-outfit text-[2rem] font-semibold leading-tight text-primary">Beranda</a></li>
+        <li><a data-mobile-link href="./feed.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Feed Laporan</a></li>
+        <li><a data-mobile-link href="./laporan.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Kirim Laporan</a></li>
+        <li><a data-mobile-link href="#kontak" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Kontak Kami</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main>
+
+    <!-- ============================== TIER 1: FULL-SCREEN HERO COVER ============================== -->
+    <section
+      id="beranda"
+      aria-labelledby="hero-title"
+      class="relative flex h-screen min-h-[560px] w-full items-center bg-slate-900 bg-cover bg-center bg-no-repeat text-white"
+      style="background-image: url('https://images.unsplash.com/photo-1565008447742-97f6f38c985c?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D');"
+    >
+      <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-950/55 to-slate-950/25"></div>
+      <div aria-hidden="true" class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-slate-950/60 to-transparent"></div>
+
+      <div class="relative mx-auto w-full max-w-6xl px-4 pt-16 sm:px-6 lg:px-8">
+        <div class="flex max-w-2xl flex-col items-start gap-6">
+          <h1 data-aos="fade-right" id="hero-title" class="text-5xl font-extrabold leading-[1.25] tracking-tight text-white">
+            Infrastruktur Kokoh, Lingkungan Aman, Warga Sejahtera.
+          </h1>
+          <p data-aos="fade-right" class="max-w-xl text-sm leading-relaxed text-white/80">
+            "Infrastruktur adalah tulang punggung peradaban."<br>— Raghu Arya
+          </p>
+          <a data-aos="fade-right" href="./laporan.html" class="mt-2 inline-flex items-center gap-2.5 rounded-md bg-white/5 backdrop-blur-lg px-7 py-4 text-sm font-semibold text-white ring-1 ring-white/15 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+            Mulai Pengaduan Masalah <span aria-hidden="true">➔</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+
+      <!-- ============================== TIER 2: STATISTICS BAR ============================== -->
+      <section data-aos="fade-up" aria-label="Statistik pelaporan" class="mt-10 sm:mt-12">
+        <dl class="grid grid-cols-2 divide-slate-200 rounded-md border border-slate-200 bg-white shadow-float lg:grid-cols-4 lg:divide-x">
+          <div class="flex items-center gap-4 border-b border-r border-slate-200 p-5 sm:p-6 lg:border-b-0 lg:border-r-0">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </span>
+            <div class="flex min-w-0 flex-col">
+              <dd id="stat-total" class="text-2xl font-extrabold tracking-tight sm:text-3xl">1.420+</dd>
+              <dt class="text-xs leading-snug text-slate-500">Laporan Masuk</dt>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 border-b border-slate-200 p-5 sm:p-6 lg:border-b-0">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <div class="flex min-w-0 flex-col">
+              <dd id="stat-selesai" class="text-2xl font-extrabold tracking-tight sm:text-3xl">1.180</dd>
+              <dt class="text-xs leading-snug text-slate-500">Selesai Diperbaiki</dt>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 border-r border-slate-200 p-5 sm:p-6 lg:border-r-0">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </span>
+            <div class="flex min-w-0 flex-col">
+              <dd id="stat-proses" class="text-2xl font-extrabold tracking-tight sm:text-3xl">185</dd>
+              <dt class="text-xs leading-snug text-slate-500">Dalam Proses Perbaikan</dt>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 p-5 sm:p-6">
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>
+            </span>
+            <div class="flex min-w-0 flex-col">
+              <dd id="stat-persen" class="text-2xl font-extrabold tracking-tight sm:text-3xl">94%</dd>
+              <dt class="text-xs leading-snug text-slate-500">Laporan selesai</dt>
+            </div>
+          </div>
+        </dl>
+      </section>
+
+      <!-- ============================== TIER 3: 2-COLUMN STORYTELLING ============================== -->
+      <section aria-labelledby="tentang-title" class="scroll-mt-20 pt-12 sm:pt-24">
+        <div id="tentang" class="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-8 md:pt-[2rem]">
+
+          <!-- Left: overlapping frames -->
+          <div data-aos="fade-right" class="relative mx-auto flex w-full max-w-xl flex-col gap-4 md:mx-0 md:block md:aspect-square md:max-w-none md:self-start lg:aspect-auto lg:min-h-[540px]">
+            <figure class="relative aspect-[4/3] w-full md:absolute md:left-0 md:top-0 md:w-[82%] overflow-hidden rounded-md border border-slate-200 bg-slate-100 shadow-float">
+              <img src="https://images.unsplash.com/photo-1708831736377-9387cd8dec1c?q=80&w=1292&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D" alt="Infrastruktur jalan dan fasilitas publik di pinggir jalan pada siang hari" class="h-full w-full object-cover" loading="lazy" />
+            </figure>
+            <figure class="relative -mt-14 ml-auto aspect-[4/3] w-[62%] md:absolute md:bottom-10 md:right-0 md:mt-0 overflow-hidden rounded-md border-4 border-white bg-slate-100 shadow-float">
+              <img src="https://images.unsplash.com/photo-1779179015285-120aaa822b1b?q=80&w=1073&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D" alt="Tanah dan lingkungan alam di sekitar fasilitas publik" class="h-full w-full object-cover" loading="lazy" />
+            </figure>
+            <span class="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-md bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-md">
+              <span class="h-2 w-2 rounded-sm bg-primary" aria-hidden="true"></span>
+              Pemantauan Aktif
+            </span>
+            <div class="relative z-10 -mt-8 mx-3 flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-2.5 shadow-float sm:gap-4 md:absolute md:bottom-0 md:left-4 lg:left-8 md:mx-0 md:mt-0 md:justify-start md:pl-5 md:pr-6">
+              <div class="flex flex-col">
+                <span id="story-persen" class="text-base font-extrabold leading-none tracking-tight text-primary lg:text-lg">84% Teratasi</span>
+                <span class="mt-1 font-mono text-[10px] uppercase tracking-widest text-slate-500">Persentase Perbaikan</span>
+              </div>
+              <span aria-hidden="true" class="h-8 w-px bg-slate-200"></span>
+              <span class="flex shrink-0 flex-col text-sm font-semibold leading-tight text-slate-900 lg:block">
+                <span id="story-mingguini">50+</span> <span class="block text-xs font-medium text-slate-500 lg:inline lg:text-sm">Laporan Baru</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: technical notepad with tabs -->
+          <article id="tentang" data-aos="fade-left" class="flex flex-col rounded-md bg-white">
+            <div class="flex flex-col gap-3 p-6">
+              <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">TENTANG KAMI</p>
+              <h2 id="tentang-title" class="text-3xl text-primary font-extrabold leading-tight tracking-tight sm:text-4xl">
+                Kolaborasi Nyata Demi Daerah.
+              </h2>
+              <div role="tablist" aria-label="Informasi platform" class="relative flex flex-wrap gap-1 rounded-md bg-slate-100 p-1">
+                <span id="tab-indicator" aria-hidden="true"></span>
+                <button type="button" role="tab" id="tab-tentang" aria-controls="panel-tentang" aria-selected="true" data-tab="tentang" class="tab-btn relative z-10 flex-1 whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors">Tentang Reinfras</button>
+                <button type="button" role="tab" id="tab-visi" aria-controls="panel-visi" aria-selected="false" data-tab="visi" class="tab-btn relative z-10 flex-1 whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors">Visi</button>
+                <button type="button" role="tab" id="tab-misi" aria-controls="panel-misi" aria-selected="false" data-tab="misi" class="tab-btn relative z-10 flex-1 whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors">Misi</button>
+              </div>
+            </div>
+
+            <div class="flex-1 px-6 py-5">
+              <!-- TAB 1 -->
+              <div role="tabpanel" id="panel-tentang" aria-labelledby="tab-tentang" class="tab-panel flex flex-col gap-6">
+                <p class="text-base leading-relaxed text-slate-700/75">
+                  Sistem pelaporan infrastruktur publik berbasis partisipasi warga. Platform ini memungkinkan masyarakat untuk melaporkan kerusakan fasilitas umum dan isu lingkungan yang dilengkapi bukti foto serta koordinat lokasi, sekaligus memantau transparansi progres penanganan secara real-time hingga masalah terselesaikan.
+                </p>
+              </div>
+
+              <!-- TAB 2 -->
+              <div role="tabpanel" id="panel-visi" aria-labelledby="tab-visi" class="tab-panel hidden">
+                <p class="text-base leading-relaxed text-slate-700/75">
+                  Visi kami adalah menciptakan sebuah ruang digital yang andal, di mana setiap laporan kerusakan fasilitas umum diproses secara real-time dan diselesaikan dengan tuntas, guna menjamin hak setiap orang atas kualitas infrastruktur yang layak dan lingkungan yang terjaga.
+                </p>
+              </div>
+
+              <!-- TAB 3 -->
+              <div role="tabpanel" id="panel-misi" aria-labelledby="tab-misi" class="tab-panel hidden">
+                <ul class="flex flex-col">
+                  <li class="flex gap-3 pb-3 text-sm leading-relaxed text-slate-700/75">
+                    <span aria-hidden="true" class="text-slate-400">•</span>
+                    <span>Memudahkan siapa pun melaporkan kerusakan fasilitas publik dan masalah lingkungan dari mana saja, cukup dengan foto dan lokasi.</span>
+                  </li>
+                  <li class="flex gap-3 py-3 text-sm leading-relaxed text-slate-700/75">
+                    <span aria-hidden="true" class="text-slate-400">•</span>
+                    <span>Meneruskan setiap laporan dengan cepat ke instansi yang berwenang agar segera ditindaklanjuti.</span>
+                  </li>
+                  <li class="flex gap-3 py-3 text-sm leading-relaxed text-slate-700/75">
+                    <span aria-hidden="true" class="text-slate-400">•</span>
+                    <span>Membuka proses penanganan kepada publik, dari laporan masuk hingga perbaikan selesai.</span>
+                  </li>
+                  <li class="flex gap-3 py-3 text-sm leading-relaxed text-slate-700/75">
+                    <span aria-hidden="true" class="text-slate-400">•</span>
+                    <span>Menyediakan data dan peta laporan sebagai dasar menentukan prioritas perbaikan.</span>
+                  </li>
+                  <li class="flex gap-3 pt-3 text-sm leading-relaxed text-slate-700/75">
+                    <span aria-hidden="true" class="text-slate-400">•</span>
+                    <span>Membangun kolaborasi antara warga, pemerintah, dan komunitas dalam menjaga fasilitas publik.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============================== TIER 4: THREE-STEP WORKFLOW ============================== -->
+      <section id="alur" aria-labelledby="alur-title" class="flex flex-col py-20 sm:py-24">
+        <div data-aos="fade-up" class="flex flex-col mx-auto max-w-2xl">
+          <p class="mx-auto font-mono text-center text-[11px] uppercase tracking-[0.2em] text-primary">ALUR SISTEM</p>
+          <h2 id="alur-title" class="mx-auto  text-3xl my-3 text-center text-primary font-extrabold tracking-tight sm:text-4xl">Tiga Langkah Menuju Perbaikan</h2>
+          <p class="mx-auto  leading-relaxed max-w-md text-center text-slate-700/75">Dari laporan warga hingga eksekusi lapangan, setiap tahap tercatat dan dapat dipantau publik.</p>
+        </div>
+
+        <div data-aos="fade-up" class="flex flex-col mt-14">
+          <!-- Jalan (desktop): marka putus-putus menghubungkan tiga titik -->
+          <div aria-hidden="true" class="absolute mx-auto w-[75%] inset-x-0 top-[22px] hidden h-3 rounded-full bg-primary/10 md:block">
+            <div class="absolute inset-x-8 top-1/2 -translate-y-1/2 border-t-2 border-dashed border-primary/40"></div>
+          </div>
+          <!-- Jalan (HP): garis vertikal -->
+          <div aria-hidden="true" class="absolute bottom-4 left-[28px] top-4 w-0 -translate-x-1/2 border-l-2 border-dashed border-primary/40 md:hidden"></div>
+          
+          <ol class="relative grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-10">
+          <li class="relative flex flex-col items-center pl-[84px] md:pl-0">
+            <span class="absolute left-0 top-0 flex h-14 w-14 items-center justify-center rounded-full bg-primary font-mono text-lg font-bold text-white ring-8 ring-white md:static">01</span>
+            <div class="flex flex-col md:items-center gap-3 pt-5">
+              <p class="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-primary">Warga</p>
+              <h3 class="text-xl font-bold tracking-tight">Laporkan Kerusakan</h3>
+              <p class="text-sm md:text-center leading-relaxed text-slate-700/75">Pelapor mengunggah foto dokumentasi beserta dengan deskripsi kerusakan dan informasi lokasi tempat kerusakan.</p>
+            </div>
+          </li>
+          <li class="relative flex flex-col items-center pl-[84px] md:pl-0">
+            <span class="absolute left-0 top-0 flex h-14 w-14 items-center justify-center rounded-full bg-primary font-mono text-lg font-bold text-white ring-8 ring-white md:static">02</span>
+            <div class="flex flex-col md:items-center gap-3 pt-5">
+              <p class="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-primary">Sistem</p>
+              <h3 class="text-xl font-bold tracking-tight">Verifikasi &amp; Interkoneksi</h3>
+              <p class="text-sm md:text-center leading-relaxed text-slate-700/75">Sistem memproses laporanmu, mengirim pesan langsung ke petugas dinas terkait, dan menampilkannya di feed.</p>
+            </div>
+          </li>
+          <li class="relative flex flex-col items-center pl-[84px] md:pl-0">
+            <span class="absolute left-0 top-0 flex h-14 w-14 items-center justify-center rounded-full bg-primary font-mono text-lg font-bold text-white ring-8 ring-white md:static">03</span>
+            <div class="flex flex-col md:items-center gap-3 pt-5">
+              <p class="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-primary">Pemerintah</p>
+              <h3 class="text-xl font-bold tracking-tight">Eksekusi Lapangan</h3>
+              <p class="text-sm md:text-center leading-relaxed text-slate-700/75">Petugas dinas yang bersangkutan terjun langsung ke lokasi ke lokasi kerusakan, dan menyelesaikan perbaikan.</p>
+            </div>
+          </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============================== TIER 5: LAPORAN YANG SUDAH DIPERBAIKI ============================== -->
+      <section id="hasil" aria-labelledby="hasil-title" class="scroll-mt-20 pb-20 sm:pb-24">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div data-aos="fade-right" class="flex max-w-2xl flex-col gap-3">
+            <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Hasil Nyata</p>
+            <h2 id="hasil-title" class="text-3xl  text-primary font-extrabold tracking-tight sm:text-4xl">Laporan yang Sudah Diselesaikan</h2>
+            <p class="leading-relaxed text-slate-700/75">Kondisi sebelum dan sesudah penanganan dari laporan warga yang sudah selesai.</p>
+          </div>
+          <a href="./feed.html" class="text-sm font-semibold text-primary underline-offset-4 hover:underline">Lihat semua laporan</a>
+        </div>
+        <ul id="hasil-list" class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-jalan-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0371</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-danger"></span>Jalan Rusak</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Lubang besar di ruas jalan poros desa</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Sukamaju</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 6 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-jembatan-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0355</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-warn"></span>Jembatan Amblas</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Jembatan desa amblas di sisi timur</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Sidomulyo</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 9 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-sungai-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0340</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-info"></span>Sampah/Sungai</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Tumpukan sampah di bantaran sungai</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Mekarsari</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 4 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-longsor-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0331</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-primary"></span>Longsor</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Tanah longsor menutup sebagian badan jalan</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Karanganyar</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 7 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-jalan-2-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0318</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-danger"></span>Jalan Rusak</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Aspal terkelupas di depan sekolah dasar</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Tegalrejo</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 5 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+          <li data-aos="fade-up">
+            <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+              <!-- Ganti dua kotak di bawah dengan foto asli, contoh:
+                   <img src="images/perbaikan-jembatan-2-sebelum.jpg" alt="Kondisi sebelum perbaikan" class="aspect-[4/5] w-full object-cover" loading="lazy" /> -->
+              <div class="grid grid-cols-2 gap-px bg-slate-200">
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                </div>
+                <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft">
+                  <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                  <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-3 p-5">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                  <span class="font-medium text-slate-900">#RNF-0306</span>
+                  <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full bg-warn"></span>Jembatan Amblas</span>
+                </div>
+                <h3 class="text-lg font-semibold leading-snug">Pagar pengaman jembatan kayu diganti</h3>
+                <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  <span>Harapan Jaya</span>
+                  <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai dalam 3 hari</span>
+                </div>
+              </div>
+            </article>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============================== TIER 7: CTA PENUTUP ============================== -->
+      <section aria-labelledby="cta-title" class="pb-20 sm:pb-24">
+        <div data-aos="fade-up" class="flex flex-col items-start justify-between gap-6 rounded-md bg-primary px-6 py-10 text-white sm:flex-row sm:items-center sm:px-10">
+          <div class="flex max-w-xl flex-col gap-2">
+            <h2 id="cta-title" class="text-2xl font-extrabold tracking-tight sm:text-3xl">Ada kerusakan di sekitarmu?</h2>
+            <p class="text-sm leading-relaxed text-white/80">Laporkan sekarang. Laporanmu langsung diteruskan ke dinas terkait dan bisa dipantau sampai selesai.</p>
+          </div>
+          <a href="./laporan.html" class="inline-flex shrink-0 items-center gap-2.5 rounded-md bg-white px-6 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+            Lapor Sekarang <span aria-hidden="true">➔</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============================== TIER 6: FAQ ============================== -->
+      <section id="faq" aria-labelledby="faq-title" class="scroll-mt-20 pb-20 sm:pb-24">
+        <div class="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
+          <div data-aos="fade-right" class="flex flex-col gap-3">
+            <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Pertanyaan dan Jawaban</p>
+            <h2 id="faq-title" class="text-primary text-3xl font-extrabold tracking-tight sm:text-4xl">Pertanyaan yang Sering Diajukan</h2>
+            <p class="max-w-md leading-relaxed text-slate-700/75">Hal-hal yang sering ditanyakan warga tentang cara kerja Reinfras.</p>
+          </div>
+          <div data-aos="fade-left" class="flex flex-col gap-3">
+            <details class="group rounded-md border border-slate-200 bg-slate-50">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-5 py-4 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+                Apa itu Reinfras?
+                <svg class="h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm leading-relaxed text-slate-700/75">Reinfras adalah platform pelaporan infrastruktur publik yang bisa digunakan siapa saja. Laporkan kerusakan seperti jalan berlubang, jembatan rusak, atau masalah lingkungan di sekitarmu, lalu laporanmu diteruskan ke pihak berwenang dan perkembangannya bisa dipantau secara terbuka.</p>
+            </details>
+            <details class="group rounded-md border border-slate-200 bg-slate-50">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-5 py-4 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+                Bagaimana cara membuat laporan?
+                <svg class="h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm leading-relaxed text-slate-700/75">Klik “Lapor Sekarang”, unggah foto kerusakan, tandai lokasi di peta, pilih kategori, lalu jelaskan kondisinya. Laporan langsung diteruskan ke dinas terkait.</p>
+            </details>
+            <details class="group rounded-md border border-slate-200 bg-slate-50">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-5 py-4 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+                Berapa lama laporan ditangani?
+                <svg class="h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm leading-relaxed text-slate-700/75">Laporan diteruskan ke petugas dinas dalam hitungan detik. Waktu perbaikan bergantung pada jenis dan tingkat kerusakan, dan statusnya bisa kamu lihat di halaman Laporan Terkini.</p>
+            </details>
+            <details class="group rounded-md border border-slate-200 bg-slate-50">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-5 py-4 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+                Jenis kerusakan apa saja yang bisa dilaporkan?
+                <svg class="h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm leading-relaxed text-slate-700/75">Jalan rusak, jembatan amblas, longsor, serta masalah sampah dan sungai yang mengganggu fasilitas publik.</p>
+            </details>
+            <details class="group rounded-md border border-slate-200 bg-slate-50">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-md px-5 py-4 text-sm font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+                Apakah laporan saya bisa dipantau?
+                <svg class="h-4 w-4 shrink-0 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="px-5 pb-5 text-sm leading-relaxed text-slate-700/75">Bisa. Setiap laporan punya nomor dan status (Proses, Waspada, atau Selesai) yang tampil di halaman Laporan Terkini.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ============================== TIER 6: ADMINISTRATIVE FOOTER ============================== -->
+  <footer data-aos="fade-up" class="bg-primary text-slate-100">
+    <div class="flex flex-col md:flex-row justify-between mx-auto w-fit max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <a href="./index.html" class="flex items-center">
+          <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logoWhite.png')"></div>
+          <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+        </a>
+        <p class="text-sm leading-relaxed text-slate-400">Platform pelaporan infrastruktur publik yang terbuka untuk semua, dari laporan warga sampai perbaikan di lapangan.</p>
+      </div>
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 id="kontak" class="scroll-mt-20 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Kontak Kami</h2>
+        <ul class="flex flex-col gap-3 text-sm text-slate-300">
+          <li>Jl. Pangeran Sido Ing Lautan, 35 Ilir, Kec. Ilir Bar. II, Kota Palembang, Sumatera Selatan 30131</li>
+          <li>+62 123 456 789</li>
+          <li>pengaduan@reinfras.com</li>
+        </ul>
+      </div>
+      <nav aria-label="Tautan footer" class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Tautan</h2>
+        <ul class="flex flex-col gap-3 text-sm">
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="#tentang" class="text-slate-300 transition-colors hover:text-white">Tentang Kami</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="#hasil" class="text-slate-300 transition-colors hover:text-white">Hasil Nyata</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./feed.html" class="text-slate-300 transition-colors hover:text-white">Laporan Terkini</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./laporan.html" class="text-slate-300 transition-colors hover:text-white">Buat Laporan</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="mx-auto flex border-t-2 border-white/15 max-w-6xl">
+      <p class="mx-auto max-w-6xl px-4 py-5 text-xs text-slate-400 sm:px-6 lg:px-8">
+        © 2026 Reinfras. Semua hak dilindungi undang-undang.
+      </p>
+    </div>
+  </footer>
+
+</div><!-- /.page-wrap -->
+
+  <!-- ============================== VANILLA JAVASCRIPT ============================== -->
+  <script src="./vendor/aos/aos.js"></script>
+  <script src="./vendor/lenis/lenis.min.js"></script>
+  <script>
+    AOS.init({
+      duration: 1200
+    });
+
+    const lenis = new Lenis({
+      duration: 1.2,        // makin besar makin "licin"
+      smoothWheel: true,
+      wheelMultiplier: 1.2,
+      syncTouch: true,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  </script>
+
+  <script>
+    // Tabs: pil putih bergeser ke tab aktif, isi panel fade + tinggi berubah halus
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+    const tabIndicator = document.getElementById('tab-indicator');
+    const panelWrap = tabPanels[0].parentElement;
+    const ACTIVE_TAB = ['text-slate-900'];
+    const INACTIVE_TAB = ['text-slate-500', 'hover:text-slate-900'];
+    const TAB_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let currentTab = 'tentang';
+    let tabToken = 0;
+
+    function moveIndicator(instant) {
+      const btn = document.querySelector('.tab-btn[data-tab="' + currentTab + '"]');
+      if (!btn) return;
+      if (instant) tabIndicator.style.transition = 'none';
+      tabIndicator.style.width = btn.offsetWidth + 'px';
+      tabIndicator.style.height = btn.offsetHeight + 'px';
+      tabIndicator.style.transform = 'translate(' + btn.offsetLeft + 'px,' + btn.offsetTop + 'px)';
+      if (instant) { void tabIndicator.offsetWidth; tabIndicator.style.transition = ''; }
+    }
+
+    function swapPanels(cur, next) {
+      const my = ++tabToken;
+      const startH = panelWrap.offsetHeight;
+      [panelWrap, ...tabPanels].forEach((el) => el.getAnimations().forEach((an) => an.cancel()));
+
+      if (!cur || reduceMotion.matches) {
+        tabPanels.forEach((p) => p.classList.toggle('hidden', p !== next));
+        return;
+      }
+      panelWrap.style.overflow = 'hidden';
+      const out = cur.animate({ opacity: [1, 0] }, { duration: 120, easing: 'ease-out' });
+      out.onfinish = () => {
+        if (my !== tabToken) return;
+        tabPanels.forEach((p) => p.classList.toggle('hidden', p !== next));
+        const endH = panelWrap.offsetHeight;
+        const grow = panelWrap.animate({ height: [startH + 'px', endH + 'px'] }, { duration: 300, easing: TAB_EASE });
+        next.animate(
+          { opacity: [0, 1], transform: ['translateY(8px)', 'translateY(0)'] },
+          { duration: 300, easing: TAB_EASE }
+        );
+        grow.onfinish = () => { if (my === tabToken) panelWrap.style.overflow = ''; };
+      };
+    }
+
+    function showTab(name, instant) {
+      currentTab = name;
+      tabButtons.forEach((btn) => {
+        const active = btn.dataset.tab === name;
+        btn.setAttribute('aria-selected', String(active));
+        btn.classList.remove(...ACTIVE_TAB, ...INACTIVE_TAB);
+        btn.classList.add(...(active ? ACTIVE_TAB : INACTIVE_TAB));
+      });
+      moveIndicator(instant || reduceMotion.matches);
+
+      const next = document.getElementById('panel-' + name);
+      const cur = tabPanels.find((p) => !p.classList.contains('hidden'));
+      if (cur === next) return;
+      if (instant) { tabPanels.forEach((p) => p.classList.toggle('hidden', p !== next)); return; }
+      swapPanels(cur, next);
+    }
+    tabButtons.forEach((btn) => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+    showTab('tentang', true);
+    window.addEventListener('resize', () => moveIndicator(true));
+    window.addEventListener('load', () => moveIndicator(true));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => moveIndicator(true));
+
+    // Navbar: transparent over the hero, solid white after scrolling
+
+  </script>
+  <script>
+    // FAQ accordion dengan animasi buka-tutup (tinggi dianimasikan lewat Web Animations API)
+    (function () {
+      const items = document.querySelectorAll('#faq details');
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const DURATION = 320;
+      const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+      function run(d, opening) {
+        const summary = d.querySelector('summary');
+        const body = d.querySelector('summary ~ *');
+        const startH = d.offsetHeight;            // tinggi saat ini (juga kalau animasi lain sedang jalan)
+        if (d._anim) d._anim.cancel();
+        d.dataset.state = opening ? 'open' : 'closed';
+
+        if (reduce.matches) { d.open = opening; return; }
+
+        d.style.overflow = 'hidden';
+        let endH;
+        if (opening) {
+          d.open = true;
+          endH = d.offsetHeight;                  // tinggi penuh setelah dibuka
+        } else {
+          endH = summary.offsetHeight + (d.offsetHeight - d.clientHeight); // hanya judul + border
+        }
+
+        const anim = d.animate(
+          { height: [startH + 'px', endH + 'px'] },
+          { duration: DURATION, easing: EASING }
+        );
+        if (body) {
+          body.animate(
+            { opacity: opening ? [0, 1] : [1, 0] },
+            { duration: DURATION, easing: EASING }
+          );
+        }
+        d._anim = anim;
+        anim.onfinish = function () {
+          if (!opening) d.open = false;
+          d.style.overflow = '';
+          d._anim = null;
+        };
+      }
+
+      items.forEach(function (d) {
+        d.dataset.state = d.open ? 'open' : 'closed';
+        d.querySelector('summary').addEventListener('click', function (e) {
+          e.preventDefault();                     // cegah buka-tutup instan bawaan browser
+          const opening = d.dataset.state !== 'open';
+          if (opening) {
+            items.forEach(function (o) {
+              if (o !== d && o.dataset.state === 'open') run(o, false);
+            });
+          }
+          run(d, opening);
+        });
+      });
+    })();
+  </script>
+  <script>
+    // Menu hamburger mobile
+    (function () {
+      const menu = document.getElementById('mobile-menu');
+      const openBtn = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('menu-close');
+      const desktop = window.matchMedia('(min-width: 768px)');
+
+      function setMenu(open) {
+        menu.classList.toggle('is-open', open);
+        menu.setAttribute('aria-hidden', String(!open));
+        menu.inert = !open;
+        openBtn.setAttribute('aria-expanded', String(open));
+        document.documentElement.style.overflow = open ? 'hidden' : '';
+        if (typeof lenis !== 'undefined') open ? lenis.stop() : lenis.start();
+        (open ? closeBtn : openBtn).focus({ preventScroll: true });
+      }
+
+      openBtn.addEventListener('click', () => setMenu(true));
+      closeBtn.addEventListener('click', () => setMenu(false));
+      menu.querySelectorAll('[data-mobile-link]').forEach((a) =>
+        a.addEventListener('click', () => setMenu(false))
+      );
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('is-open')) setMenu(false);
+      });
+      desktop.addEventListener('change', (e) => {
+        if (e.matches && menu.classList.contains('is-open')) setMenu(false);
+      });
+    })();
+  </script>
+  <script src="config.js"></script>
+  <script>
+    async function loadStats() {
+      try {
+        const res = await fetch(`${window.SERVER_URL}/laporan`);
+        const text = await res.text();
+        if (text.trim().startsWith('<')) {
+          console.warn('Gagal memuat data dinamis: Server mengembalikan HTML.');
+          return;
+        }
+        const json = JSON.parse(text);
+        if (json.status === 'sukses') {
+          const stats = json.stats || {};
+          const total = stats.total || 0;
+          const selesai = stats.selesai || 0;
+          const proses = stats.proses || 0;
+          const persen = stats.persen || 0;
+          const totalMingguIni = json.totalMingguIni || 0;
+
+          const elTotal = document.getElementById('stat-total');
+          const elSelesai = document.getElementById('stat-selesai');
+          const elProses = document.getElementById('stat-proses');
+          const elPersen = document.getElementById('stat-persen');
+          const storyPersen = document.getElementById('story-persen');
+          const storyMingguIni = document.getElementById('story-mingguini');
+
+          if (elTotal) elTotal.textContent = total.toLocaleString('id-ID') + (total > 0 ? '+' : '');
+          if (elSelesai) elSelesai.textContent = selesai.toLocaleString('id-ID');
+          if (elProses) elProses.textContent = proses.toLocaleString('id-ID');
+          if (elPersen) elPersen.textContent = persen + '%';
+          if (storyPersen) storyPersen.textContent = persen + '% Teratasi';
+          if (storyMingguIni) storyMingguIni.textContent = totalMingguIni + '+';
+
+          const allReports = Array.isArray(json.data) ? json.data : [];
+          const resolvedReports = allReports
+            .filter(r => (r.status || '').toLowerCase() === 'selesai')
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          const hasilSection = document.getElementById('hasil');
+          const hasilList = document.getElementById('hasil-list');
+
+          if (hasilSection && hasilList) {
+            if (selesai < 6 || resolvedReports.length < 6) {
+              hasilSection.style.display = 'none';
+            } else {
+              hasilSection.style.display = '';
+              const top6 = resolvedReports.slice(0, 6);
+              hasilList.innerHTML = top6.map(item => {
+                const imgBeforeSrc = item.fotoUrl ? `${window.SERVER_URL}${item.fotoUrl}` : '';
+                const imgAfterSrc = item.fotoSelesaiUrl ? `${window.SERVER_URL}${item.fotoSelesaiUrl}` : imgBeforeSrc;
+                const cat = item.kategori || 'Infrastruktur';
+                let dotColor = 'bg-primary';
+                if (cat.toLowerCase().includes('jalan')) dotColor = 'bg-danger';
+                else if (cat.toLowerCase().includes('jembatan')) dotColor = 'bg-warn';
+                else if (cat.toLowerCase().includes('sampah') || cat.toLowerCase().includes('sungai')) dotColor = 'bg-info';
+
+                return `
+                  <li data-aos="fade-up">
+                    <article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float">
+                      <div class="grid grid-cols-2 gap-px bg-slate-200">
+                        <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-slate-100 overflow-hidden">
+                          ${imgBeforeSrc ? `<img src="${imgBeforeSrc}" alt="Foto sebelum" class="h-full w-full object-cover" loading="lazy" />` : `
+                            <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                            <span class="text-xs font-medium text-slate-500">Foto sebelum</span>
+                          `}
+                        </div>
+                        <div class="flex aspect-[4/5] flex-col items-center justify-center gap-2.5 bg-primary-soft overflow-hidden">
+                          ${imgAfterSrc ? `<img src="${imgAfterSrc}" alt="Foto sesudah" class="h-full w-full object-cover" loading="lazy" />` : `
+                            <svg class="h-6 w-6 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                            <span class="text-xs font-medium text-slate-500">Foto sesudah</span>
+                          `}
+                        </div>
+                      </div>
+                      <div class="flex flex-1 flex-col gap-3 p-5">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500">
+                          <span class="font-medium text-slate-900">${item.nomorLaporan || '#RNF'}</span>
+                          <span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 rounded-full ${dotColor}"></span>${cat}</span>
+                        </div>
+                        <h3 class="text-lg font-semibold leading-snug">${item.judulLaporan || 'Perbaikan fasilitas'}</h3>
+                        <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                          <span>${item.alamat || 'Palembang'}</span>
+                          <span class="inline-flex items-center gap-1.5 rounded-sm bg-primary/10 px-2 py-0.5 font-mono font-medium text-primary">Selesai</span>
+                        </div>
+                      </div>
+                    </article>
+                  </li>
+                `;
+              }).join('');
+            }
+          }
+
+          // Refresh AOS so elements are recalculated when page height changes
+          if (typeof AOS !== 'undefined') {
+            AOS.refresh();
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal memuat data dinamis:', err);
+      }
+    }
+    loadStats();
+  </script>
+</body>
+</html>

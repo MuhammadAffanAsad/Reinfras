@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pantau laporan kerusakan infrastruktur warga Kota Palembang secara terbuka lewat Reinfras." />
+  <title>Laporan Terkini | Reinfras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link href="./vendor/aos/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="./output.css" />
+  <style>
+    /* ===== Menu hamburger (mobile) ===== */
+    .burger-line { display:block; height:2.5px; width:26px; border-radius:9999px; background:#fff; }
+    #mobile-menu {
+      position: fixed; inset: 0; z-index: 60; background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .3s ease, visibility 0s linear .3s;
+    }
+    #mobile-menu.is-open {
+      opacity: 1; visibility: visible; pointer-events: auto;
+      transition: opacity .3s ease, visibility 0s;
+    }
+    #mobile-menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .35s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    #mobile-menu.is-open li { opacity: 1; transform: none; }
+    #mobile-menu.is-open li:nth-child(1) { transition-delay: .08s; }
+    #mobile-menu.is-open li:nth-child(2) { transition-delay: .14s; }
+    #mobile-menu.is-open li:nth-child(3) { transition-delay: .20s; }
+    #mobile-menu.is-open li:nth-child(4) { transition-delay: .26s; }
+    @media (prefers-reduced-motion: reduce) {
+      #mobile-menu, #mobile-menu li { transition: none !important; }
+    }
+    @media (min-width: 768px) { #mobile-menu { display: none; } }
+    @media (max-width: 767px) {
+      [data-aos="fade-left"], [data-aos="fade-right"] { transform: translate3d(0, 24px, 0); }
+    }
+  </style>
+  <style>html { scroll-behavior: smooth; } @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }</style>
+  <!-- Dropdown Styling -->
+  <style>
+    select.fancy,
+    select.fancy::picker(select) {
+      appearance: base-select;
+    }
+    select.fancy::picker(select) {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.25);
+    }
+    select.fancy::picker-icon,
+    select.fancy option::checkmark {
+      display: none;
+    }
+    select.fancy option {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+    }
+    select.fancy option:hover {
+      background: #e8f0eb85;
+    }
+    select.fancy option:checked {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="bg-white font-sans text-slate-900 antialiased">
+
+  <!-- ============================== NAVBAR ============================== -->
+  <header data-aos="fade-down" id="navbar" class="inset-x-0 z-30 bg-white/5 backdrop-blur-lg border-b border-white/10 bg-transparent absolute">
+    <div class="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <a href="./index.html" class="flex items-center">
+        <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logo.png')"></div>
+        <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+      </a>
+
+      <div class="hidden w-full justify-center md:flex">
+        <nav aria-label="Navigasi utama" class="hidden md:block">
+          <ul class="flex items-center gap-1">
+            <li><a data-nav-link href="./index.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Beranda</a></li>
+            <li><a data-nav-link href="./feed.html" class="block rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white">Feed Laporan</a></li>
+            <li><a data-nav-link href="./laporan.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Kirim Laporan</a></li>
+            <li><a data-nav-link href="#kontak" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Kontak Kami</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Tombol hamburger (hanya tampil di mobile) -->
+      <button id="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu"
+        class="ml-auto flex h-11 w-11 shrink-0 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full md:hidden">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================== MENU MOBILE (OVERLAY) ============================== -->
+  <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" aria-hidden="true" inert>
+    <button id="menu-close" type="button" aria-label="Tutup menu"
+      class="absolute right-4 top-6 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-slate-200/80 text-slate-700 transition-colors hover:bg-slate-300 sm:right-6">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+    <nav aria-label="Navigasi seluler">
+      <ul class="flex flex-col items-center gap-9 text-center">
+        <li><a data-mobile-link href="./index.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Beranda</a></li>
+        <li><a data-mobile-link href="./feed.html" class="font-outfit text-[2rem] font-semibold leading-tight text-primary">Feed Laporan</a></li>
+        <li><a data-mobile-link href="./laporan.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Kirim Laporan</a></li>
+        <li><a data-mobile-link href="#kontak" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Kontak Kami</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <main>
+    <section aria-labelledby="hero-title" class="relative h-fit w-full items-end bg-slate-900 bg-cover bg-center text-white" style="background-image: url('https://images.unsplash.com/photo-1565008447742-97f6f38c985c?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D');">
+      <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/60 to-slate-950/30"></div>
+      <div data-aos="fade-right" class="relative mx-auto w-full max-w-6xl px-4 pb-12 pt-32 sm:px-6 lg:px-8">
+        <nav aria-label="Breadcrumb" class="text-xs text-white/70"><a href="./index.html" class="hover:text-white">Beranda</a> <span aria-hidden="true">/</span> <span class="font-semibold text-white">Laporan Terkini</span></nav>
+        <h1 id="hero-title" class="mt-6 max-w-2xl text-4xl font-extrabold leading-[1.2] tracking-tight sm:text-5xl">Laporan Terkini dari Warga Palembang.</h1>
+        <p class="mt-4 max-w-xl text-sm leading-relaxed text-white/80">Setiap laporan dipantau secara terbuka, lengkap dengan tahapan penanganan dan target waktu layanan.</p>
+      </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section aria-labelledby="feed-title" class="py-14 sm:py-16">
+        <h2 id="feed-title" class="sr-only">Daftar laporan</h2>
+
+        <!-- Filter -->
+        <div data-aos="fade-up" class="flex flex-col gap-4 rounded-md border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div class="relative w-full md:max-w-sm">
+              <label for="q" class="sr-only">Cari laporan</label>
+              <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="q" type="search" placeholder="Cari nomor, judul, atau desa" class="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-3.5 text-sm placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <a href="./laporan.html" class="inline-flex w-fit items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark">Buat Laporan <span aria-hidden="true">➔</span></a>
+          </div>
+          <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div role="group" aria-label="Filter status" id="f-status" class="flex flex-wrap items-center gap-2"><span class="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-500">Status</span></div>
+            <div class="flex items-center gap-3">
+              <label for="f-kat" class="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-500 shrink-0">Kategori</label>
+              <div class="relative">
+                <select id="f-kat" class="fancy cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-semibold pr-10 text-xs text-slate-900 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15">
+                  <option value="">Semua Kategori</option>
+                  <option value="Jalan Rusak" class="text-slate-900">Jalan Rusak</option>
+                  <option value="Trotoar" class="text-slate-900">Trotoar</option>
+                  <option value="Saluran Air" class="text-slate-900">Saluran Air</option>
+                  <option value="Lampu Jalan" class="text-slate-900">Lampu Jalan</option>
+                  <option value="Kelistrikan" class="text-slate-900">Kelistrikan</option>
+                  <option value="Air Bersih" class="text-slate-900">Air Bersih</option>
+                  <option value="Jembatan" class="text-slate-900">Jembatan</option>
+                  <option value="Rambu dan Lampu Lalu Lintas" class="text-slate-900">Rambu dan Lampu Lalu Lintas</option>
+                  <option value="Sampah Umum" class="text-slate-900">Sampah Umum</option>
+                  <option value="Taman dan Ruang Terbuka" class="text-slate-900">Taman dan Ruang Terbuka</option>
+                  <option value="Lainnya" class="text-slate-900">Lainnya</option>
+                </select>
+                <svg class="absolute pointer-events-none right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p id="count" class="mt-6 font-mono text-xs text-slate-500" aria-live="polite"></p>
+        <ul id="feed" class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"></ul>
+
+        <div id="empty" class="mt-8 hidden rounded-md border border-dashed border-slate-300 px-6 py-14 text-center">
+          <p class="font-semibold">Tidak ada laporan yang cocok.</p>
+          <p class="mt-1 text-sm text-slate-600">Coba ubah kata kunci atau filter, atau <a href="./laporan.html" class="font-semibold text-primary underline-offset-4 hover:underline">buat laporan baru</a>.</p>
+        </div>
+
+        <div class="mt-10 flex justify-center">
+          <button id="more" type="button" class="rounded-md border border-slate-300 px-6 py-3 text-sm font-semibold transition-colors hover:border-primary hover:text-primary">Muat lebih banyak</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ============================== TIER 6: ADMINISTRATIVE FOOTER ============================== -->
+  <footer data-aos="fade-up" class="bg-primary text-slate-100">
+    <div class="flex flex-col md:flex-row justify-between mx-auto w-fit max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <a href="./index.html" class="flex items-center">
+          <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logoWhite.png')"></div>
+          <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+        </a>
+        <p class="text-sm leading-relaxed text-slate-400">Sistem pelaporan infrastruktur dan tata kelola lahan basah terpadu Kota Palembang, Sumatera Selatan.</p>
+      </div>
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 id="kontak" class="scroll-mt-20 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Kontak Kami</h2>
+        <ul class="flex flex-col gap-3 text-sm text-slate-300">
+          <li>Jl. Pangeran Sido Ing Lautan, 35 Ilir, Kec. Ilir Bar. II, Kota Palembang, Sumatera Selatan 30131</li>
+          <li>+62 123 456 789</li>
+          <li>pengaduan@reinfras.com</li>
+        </ul>
+      </div>
+      <nav aria-label="Tautan footer" class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Tautan</h2>
+        <ul class="flex flex-col gap-3 text-sm">
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./index.html#tentang" class="text-slate-300 transition-colors hover:text-white">Tentang Kami</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./index.html#hasil" class="text-slate-300 transition-colors hover:text-white">Hasil Nyata</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./feed.html" class="text-slate-300 transition-colors hover:text-white">Laporan Terkini</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./laporan.html" class="text-slate-300 transition-colors hover:text-white">Buat Laporan</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="mx-auto flex border-t-2 border-white/15 max-w-6xl">
+      <p class="mx-auto max-w-6xl px-4 py-5 text-xs text-slate-400 sm:px-6 lg:px-8">
+        © 2026 Reinfras. Semua hak dilindungi undang-undang.
+      </p>
+    </div>
+  </footer>
+
+  <dialog id="detail" aria-labelledby="detail-title" style="overscroll-behavior: contain;" data-lenis-prevent class="m-auto max-h-[90vh] w-[min(94vw,760px)] overflow-y-auto rounded-md bg-white p-0 text-slate-900 shadow-float backdrop:bg-slate-950/60">
+    <button type="button" data-close aria-label="Tutup detail laporan" class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-md bg-white/90 text-slate-700 shadow-sm transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <div id="detail-body"></div>
+  </dialog>
+
+  <script src="./vendor/aos/aos.js"></script>
+  <script src="./vendor/lenis/lenis.min.js"></script>
+  <script src="config.js"></script>
+  <script>
+    AOS.init({
+      duration: 1200
+    });
+
+    const lenis = new Lenis({
+      duration: 1.2,        // makin besar makin "licin"
+      smoothWheel: true,
+      wheelMultiplier: 1.2,
+      syncTouch: true,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  </script>
+
+  <script>
+    // DATA LAPORAN: Dimuat dari backend
+    let REPORTS = [];
+
+    const DOT = {
+      'Jalan Rusak': 'rounded-full bg-danger',
+      'Trotoar': 'rounded-[2px] bg-amber-500',
+      'Saluran Air': 'rounded-full bg-blue-500',
+      'Lampu Jalan': 'rounded-full bg-yellow-400',
+      'Kelistrikan': 'rounded-[2px] bg-purple-500',
+      'Air Bersih': 'rounded-full bg-cyan-500',
+      'Jembatan': 'rotate-45 rounded-[2px] bg-warn',
+      'Rambu dan Lampu Lalu Lintas': 'rounded-[2px] bg-red-500',
+      'Sampah Umum': 'rounded-full border-2 border-info',
+      'Taman dan Ruang Terbuka': 'rounded-full bg-emerald-500',
+      'Lainnya': 'rounded-full bg-slate-400'
+    };
+    const STEPS = ['Laporan Diterima','Diteruskan ke Dinas PU/BPBD','Selesai Diperbaiki'];
+    const STATUS = {1:'Diterima',2:'Diteruskan',3:'Selesai'};
+    const SLA = {1:['Menunggu verifikasi','text-slate-500'],2:['Target 72 jam','text-warn'],3:['✓ Tuntas','text-primary']};
+    const PAGE = 6;
+    let shown = PAGE, fStatus = 0, fKat = '', query = '', curList = REPORTS;
+
+    const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const DINAS = {
+      'Jalan Rusak': 'Dinas PUPR Kota Palembang',
+      'Trotoar': 'Dinas PUPR / Tata Kota Kota Palembang',
+      'Saluran Air': 'Dinas PUPR / SDA Kota Palembang',
+      'Lampu Jalan': 'Dinas Perhubungan Kota Palembang',
+      'Kelistrikan': 'PT PLN (Persero) / Dinas ESDM',
+      'Air Bersih': 'PDAM Tirta Musi / Dinas PUPR',
+      'Jembatan': 'Dinas PUPR Kota Palembang',
+      'Rambu dan Lampu Lalu Lintas': 'Dinas Perhubungan Kota Palembang',
+      'Sampah Umum': 'Dinas Lingkungan Hidup Kota Palembang',
+      'Taman dan Ruang Terbuka': 'Dinas Perkim & Pertamanan',
+      'Lainnya': 'Pemerintah Kota Palembang'
+    };
+    const ESTIMASI = {1:'Verifikasi dalam 1 x 24 jam',2:'Target 72 jam',3:'Sudah selesai'};
+    const PH = '<svg class="absolute inset-0 m-auto h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>';
+    const photo = (r, ratio) => `<div class="relative flex ${ratio} items-center justify-center overflow-hidden bg-slate-100 text-slate-400">${PH}${r.img ? `<img src="${r.img}" alt="Foto dokumentasi: ${esc(r.j)}" class="relative h-full w-full object-cover" loading="lazy" onerror="this.remove()" />` : ''}</div>`;
+    const bars = r => [1,2,3].map(n => (n === r.s && r.s === 2)
+      ? '<span class="h-1.5 overflow-hidden rounded-sm bg-slate-200"><span class="block h-full w-1/2 animate-pulse bg-warn"></span></span>'
+      : `<span class="h-1.5 rounded-sm ${n <= r.s ? 'bg-primary' : 'bg-slate-200'}"></span>`).join('');
+
+    function card(r) {
+      return `<li><article class="flex h-full flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-float transition-transform duration-300 hover:-translate-y-1">
+        ${photo(r, 'aspect-[16/10]')}
+        <div class="flex flex-1 flex-col gap-3 p-5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800"><span class="block h-2.5 w-2.5 ${DOT[r.k] || 'rounded-full bg-slate-400'}"></span>${r.k}</span>
+            <time class="font-mono text-[11px] text-slate-500">${r.t.split(',')[0]}</time>
+          </div>
+          <h3 class="line-clamp-2 text-lg font-semibold leading-snug">${esc(r.j)}</h3>
+          <p class="line-clamp-2 text-sm leading-relaxed text-slate-600">${esc(r.d)}</p>
+          <p class="text-xs text-slate-600">📍 ${esc(r.l)}</p>
+          <div class="mt-auto flex flex-col gap-4 pt-2">
+            <div class="flex items-center gap-3">
+              <div class="grid flex-1 grid-cols-3 gap-1.5" role="img" aria-label="Status laporan: ${STEPS[r.s - 1]}">${bars(r)}</div>
+              <span class="text-[11px] font-semibold ${SLA[r.s]?.[1] || 'text-slate-500'}">${STATUS[r.s] || 'Diterima'}</span>
+            </div>
+            <button type="button" data-id="${r.id}" class="detail-btn inline-flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 px-4 py-2.5 text-xs font-semibold transition-colors hover:border-primary hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Pelajari lebih lanjut <span aria-hidden="true">➔</span></button>
+          </div>
+        </div></article></li>`;
+    }
+
+    // Jendela detail (pop-up rincian laporan)
+    const dlg = document.getElementById('detail'), dlgBody = document.getElementById('detail-body');
+    const FASE = r => [
+      {n:'Laporan diterima', t:r.t, x:`Laporan masuk ke sistem dan diberi nomor #${r.id}.`},
+      {n:`Diverifikasi dan diteruskan ke ${DINAS[r.k] || 'Pemerintah Kota Palembang'}`, t:'Otomatis setelah laporan masuk', x:'Metadata foto dan lokasi divalidasi, lalu petugas terkait diberi notifikasi.'},
+      {n:'Penanganan di lapangan', t:'Target 72 jam', x:'Tim dinas menuju lokasi dan melakukan perbaikan.'},
+      {n:'Selesai diperbaiki', t:'', x:'Penanganan tuntas dan status laporan ditutup.'}
+    ];
+    const eyebrow = t => `<h3 class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">${t}</h3>`;
+    const slot = (label, src) => `<figure class="flex flex-col gap-1.5"><div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400">${PH}${src ? `<img src="${src}" alt="${label}" class="relative h-full w-full object-cover" loading="lazy" onerror="this.remove()" />` : ''}</div><figcaption class="text-xs font-medium text-slate-600">${label}</figcaption></figure>`;
+
+    function openDetail(id) {
+      const r = REPORTS.find(x => String(x.id) === String(id)); if (!r) return;
+      const idx = curList.findIndex(x => String(x.id) === String(id));
+      const done = r.s === 1 ? 1 : r.s === 2 ? 2 : 4;
+      const timeline = FASE(r).map((f, i) => {
+        const isDone = i < done, cur = i === done;
+        const dot = isDone ? 'bg-primary' : cur ? 'bg-warn animate-pulse' : 'bg-slate-300';
+        return `<li class="relative pl-7" ${cur ? 'aria-current="step"' : ''}>
+          <span class="absolute left-0 top-1 block h-3 w-3 rounded-full ${dot}"></span>
+          ${i < 3 ? '<span class="absolute bottom-[-1.25rem] left-[5px] top-4 block w-px bg-slate-200"></span>' : ''}
+          <p class="text-sm font-semibold ${isDone || cur ? '' : 'text-slate-400'}">${esc(f.n)}</p>
+          ${f.t && (isDone || cur) ? `<p class="mt-0.5 font-mono text-[11px] text-slate-500">${esc(f.t)}</p>` : ''}
+          <p class="mt-1 text-xs leading-relaxed ${isDone || cur ? 'text-slate-600' : 'text-slate-400'}">${f.x}</p></li>`;
+      }).join('');
+      const row = (k, v) => `<div class="flex flex-col gap-0.5"><dt class="text-xs text-slate-500">${k}</dt><dd class="text-sm font-semibold">${v}</dd></div>`;
+      dlgBody.innerHTML = `${photo(r, 'aspect-[16/9]')}
+        <div class="flex flex-col gap-7 p-6 sm:p-8">
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] text-slate-500"><span class="font-medium text-slate-900">#${r.id}</span><time>${r.t}</time><span class="ml-auto inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 font-sans font-medium text-slate-800"><span class="block h-2.5 w-2.5 ${DOT[r.k] || 'rounded-full bg-slate-400'}"></span>${r.k}</span></div>
+            <h2 id="detail-title" class="text-2xl font-extrabold leading-snug tracking-tight">${esc(r.j)}</h2>
+            <span class="w-fit rounded-sm px-2 py-0.5 font-mono text-[11px] font-semibold ${SLA[r.s]?.[1] || 'text-slate-500'} bg-slate-100">Status: ${STATUS[r.s] || 'Diterima'}</span>
+          </div>
+          <section class="flex flex-col gap-3">${eyebrow('Deskripsi Laporan')}<p class="rounded-md bg-slate-50 p-4 text-sm leading-relaxed text-slate-600">${esc(r.d)}</p></section>
+          <section class="flex flex-col gap-4">${eyebrow('Informasi Laporan')}<dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">${row('Lokasi', esc(r.l) + ', Kota Palembang')}${row('Koordinat', '<span class="font-mono">' + r.c + '</span>')}${row('Diteruskan ke', DINAS[r.k] || 'Pemerintah Kota Palembang')}${row('Estimasi penanganan', ESTIMASI[r.s] || 'Menunggu peninjauan')}${row('Pelapor', esc(r.p || 'Warga'))}${row('Kategori', r.k)}</dl></section>
+          <section class="flex flex-col gap-4">${eyebrow('Riwayat Penanganan')}<ol class="flex flex-col gap-5">${timeline}</ol></section>
+          ${r.s === 3 ? `<section class="flex flex-col gap-3">${eyebrow('Hasil Perbaikan (Before / After)')}<div class="grid grid-cols-2 gap-3">${slot('Sebelum', r.img)}${slot('Sesudah (Bukti Pengerjaan)', r.after || r.img)}</div></section>` : ''}
+          <div class="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-6">
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.c)}" target="_blank" rel="noopener" class="rounded-md bg-primary px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark">Lihat di Google Maps</a>
+            <button type="button" data-copy="${r.id}" class="rounded-md border border-slate-300 px-5 py-2.5 text-xs font-semibold transition-colors hover:border-primary hover:text-primary">Salin tautan laporan</button>
+            <a href="./laporan.html" class="ml-auto text-xs font-semibold text-primary underline-offset-4 hover:underline">Laporkan kerusakan lain</a>
+          </div>
+          <div class="flex items-center justify-between gap-3 text-xs">
+            <button type="button" data-go="-1" ${idx <= 0 ? 'disabled' : ''} class="rounded-md border border-slate-300 px-4 py-2 font-semibold transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-300 disabled:hover:text-inherit">‹ Sebelumnya</button>
+            <span class="font-mono text-slate-500">${idx + 1} / ${curList.length}</span>
+            <button type="button" data-go="1" ${idx < 0 || idx >= curList.length - 1 ? 'disabled' : ''} class="rounded-md border border-slate-300 px-4 py-2 font-semibold transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-300 disabled:hover:text-inherit">Berikutnya ›</button>
+          </div>
+        </div>`;
+      if (!dlg.open) dlg.showModal();
+      document.body.style.overflow = 'hidden';
+      dlg.scrollTop = 0;
+      try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    }
+    document.getElementById('feed').addEventListener('click', e => { const b = e.target.closest('.detail-btn'); if (b) openDetail(b.dataset.id); });
+    dlg.addEventListener('click', e => {
+      if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); return; }
+      const g = e.target.closest('[data-go]');
+      if (g && !g.disabled) {
+        const cur = dlgBody.querySelector('[data-copy]').dataset.copy, i = curList.findIndex(x => String(x.id) === String(cur));
+        const n = curList[i + Number(g.dataset.go)]; if (n) openDetail(n.id);
+        return;
+      }
+      const c = e.target.closest('[data-copy]');
+      if (c) {
+        const url = location.href.split('#')[0] + '#' + c.dataset.copy;
+        navigator.clipboard.writeText(url).then(() => { c.textContent = 'Tautan disalin'; }, () => { c.textContent = 'Gagal menyalin'; });
+        setTimeout(() => { c.textContent = 'Salin tautan laporan'; }, 2000);
+      }
+    });
+    dlg.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    });
+
+    function chip(group, label, value, key) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = label; b.dataset.v = value; b.dataset.key = key;
+      b.className = 'chip rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors';
+      b.addEventListener('click', () => { if (key === 'status') fStatus = +value; else fKat = value; shown = PAGE; render(); });
+      document.getElementById(group).appendChild(b);
+    }
+    [['Semua',0],['Diterima',1],['Diteruskan',2],['Selesai',3]].forEach(([l,v]) => chip('f-status', l, v, 'status'));
+    document.getElementById('f-kat').addEventListener('change', e => {
+      fKat = e.target.value;
+      shown = PAGE;
+      render();
+    });
+
+    function render() {
+      const q = query.trim().toLowerCase();
+      const list = REPORTS.filter(r => (!fStatus || r.s === fStatus) && (!fKat || r.k === fKat) && (!q || (String(r.id) + ' ' + r.j + ' ' + r.l).toLowerCase().includes(q)));
+      document.querySelectorAll('#f-status .chip').forEach(b => {
+        const on = +b.dataset.v === fStatus;
+        b.setAttribute('aria-pressed', on);
+        b.classList.toggle('border-primary', on); b.classList.toggle('bg-primary', on); b.classList.toggle('text-white', on);
+        b.classList.toggle('border-slate-300', !on); b.classList.toggle('bg-white', !on);
+      });
+      curList = list;
+      document.getElementById('feed').innerHTML = list.slice(0, shown).map(card).join('');
+      document.getElementById('count').textContent = list.length + ' laporan ditemukan';
+      document.getElementById('empty').classList.toggle('hidden', list.length > 0);
+      document.getElementById('more').parentElement.classList.toggle('hidden', list.length <= shown);
+    }
+    document.getElementById('q').addEventListener('input', e => { query = e.target.value; shown = PAGE; render(); });
+    document.getElementById('more').addEventListener('click', () => { shown += PAGE; render(); });
+
+    // Fungsi untuk mengambil data dari backend
+    async function loadBackendReports() {
+      try {
+        const res = await fetch(`${window.SERVER_URL}/laporan`);
+        const text = await res.text();
+        if (text.trim().startsWith('<')) {
+          console.warn('Gagal memuat laporan: Server mengembalikan HTML (kemungkinan URL server/tunnel salah atau offline).');
+          return;
+        }
+        const json = JSON.parse(text);
+        if (json.status === 'sukses' && Array.isArray(json.data) && json.data.length > 0) {
+          REPORTS = json.data.map(item => {
+            let sNum = 1;
+            if (item.status === 'diteruskan') sNum = 2;
+            else if (item.status === 'selesai') sNum = 3;
+            else if (item.status === 'menunggu' || item.status === 'diterima') sNum = 1;
+
+            let dateStr = '';
+            if (item.createdAt) {
+              const d = new Date(item.createdAt);
+              const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+              const day = String(d.getDate()).padStart(2, '0');
+              const mon = months[d.getMonth()];
+              const year = d.getFullYear();
+              const hours = String(d.getHours()).padStart(2, '0');
+              const mins = String(d.getMinutes()).padStart(2, '0');
+              dateStr = `${day} ${mon} ${year}, ${hours}:${mins} WIB`;
+            } else {
+              dateStr = 'Baru saja';
+            }
+
+            let coordStr = '';
+            if (item.koordinat && item.koordinat.latitude !== null && item.koordinat.longitude !== null && !isNaN(item.koordinat.latitude)) {
+              coordStr = `${item.koordinat.latitude}, ${item.koordinat.longitude}`;
+            } else if (item.koordinat && item.koordinat.raw) {
+              coordStr = item.koordinat.raw;
+            } else {
+              coordStr = '-2.9898, 104.7566';
+            }
+
+            const title = item.judulLaporan || `${item.kategori} di ${item.alamat || 'Palembang'}`;
+            const pelapor = item.namaPelapor || 'Warga Pelapor';
+
+            return {
+              id: item.id || item.nomorLaporan || item._id,
+              t: dateStr,
+              k: item.kategori || 'Lainnya',
+              j: title,
+              p: pelapor,
+              d: item.keterangan || '-',
+              l: item.alamat || 'Kota Palembang',
+              c: coordStr,
+              s: sNum,
+              img: item.fotoUrl ? `${window.SERVER_URL}${item.fotoUrl}` : '',
+              after: item.fotoSelesaiUrl ? `${window.SERVER_URL}${item.fotoSelesaiUrl}` : ''
+            };
+          });
+        }
+      } catch (err) {
+        console.warn('Gagal memuat laporan dari backend:', err);
+      }
+      curList = REPORTS;
+      render();
+      const h = decodeURIComponent(location.hash.slice(1)); if (h) openDetail(h);
+    }
+
+    loadBackendReports();
+  </script>
+  <script>
+    // Menu hamburger mobile
+    (function () {
+      const menu = document.getElementById('mobile-menu');
+      const openBtn = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('menu-close');
+      const desktop = window.matchMedia('(min-width: 768px)');
+
+      function setMenu(open) {
+        menu.classList.toggle('is-open', open);
+        menu.setAttribute('aria-hidden', String(!open));
+        menu.inert = !open;
+        openBtn.setAttribute('aria-expanded', String(open));
+        document.documentElement.style.overflow = open ? 'hidden' : '';
+        if (typeof lenis !== 'undefined') open ? lenis.stop() : lenis.start();
+        (open ? closeBtn : openBtn).focus({ preventScroll: true });
+      }
+
+      openBtn.addEventListener('click', () => setMenu(true));
+      closeBtn.addEventListener('click', () => setMenu(false));
+      menu.querySelectorAll('[data-mobile-link]').forEach((a) =>
+        a.addEventListener('click', () => setMenu(false))
+      );
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('is-open')) setMenu(false);
+      });
+      desktop.addEventListener('change', (e) => {
+        if (e.matches && menu.classList.contains('is-open')) setMenu(false);
+      });
+    })();
+  </script>
+</body>
+</html>

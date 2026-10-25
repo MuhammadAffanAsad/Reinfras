@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dashboard Petugas & Admin Reinfras: Kelola status penanganan dan moderasi pengaduan kerusakan infrastruktur Kota Palembang." />
+  <title>Admin Dashboard | Reinfras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link href="./vendor/aos/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="./output.css" />
+  <script src="./vendor/axios/axios.min.js"></script>
+  <!-- Dropdown Styling -->
+  <style>
+    select.fancy,
+    select.fancy::picker(select) {
+      appearance: base-select;
+    }
+    select.fancy::picker(select) {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.25);
+    }
+    select.fancy::picker-icon,
+    select.fancy option::checkmark {
+      display: none;
+    }
+    select.fancy option {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+    }
+    select.fancy option:hover {
+      background: #e8f0eb85;
+    }
+    select.fancy option:checked {
+      font-weight: 600;
+    }
+  </style>
+
+  <style>
+    .burger-line { display:block; height:2.5px; width:26px; border-radius:9999px; background:#fff; }
+    #mobile-menu {
+      position: fixed; inset: 0; z-index: 60; background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .3s ease, visibility 0s linear .3s;
+    }
+    #mobile-menu.is-open {
+      opacity: 1; visibility: visible; pointer-events: auto;
+      transition: opacity .3s ease, visibility 0s;
+    }
+    #mobile-menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .35s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    #mobile-menu.is-open li { opacity: 1; transform: none; }
+    #mobile-menu.is-open li:nth-child(1) { transition-delay: .08s; }
+    #mobile-menu.is-open li:nth-child(2) { transition-delay: .14s; }
+    #mobile-menu.is-open li:nth-child(3) { transition-delay: .20s; }
+    #mobile-menu.is-open li:nth-child(4) { transition-delay: .26s; }
+    #mobile-menu.is-open li:nth-child(5) { transition-delay: .32s; }
+    @media (prefers-reduced-motion: reduce) {
+      #mobile-menu, #mobile-menu li { transition: none !important; }
+    }
+    @media (min-width: 768px) { #mobile-menu { display: none; } }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 antialiased min-h-screen flex flex-col">
+
+  <main class="flex-1">
+    <!-- Hero / Admin Header -->
+    <section class="bg-primary text-white py-10 sm:py-12 shadow-sm">
+      <div data-aos="fade-up" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h1 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
+              Panel Pengelolaan Laporan
+            </h1>
+            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-white/80">
+              Pantau laporan masuk, perbarui tahapan pengerjaan ke dinas terkait, serta kelola dan hapus data laporan kerusakan infrastruktur Palembang.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btn-refresh" type="button" class="inline-flex items-center gap-2 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2.5 text-xs font-semibold text-white transition-all shadow-sm active:scale-95">
+              <svg id="refresh-icon" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+              <span>Perbarui Data</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div class="rounded-xl border border-white/15 bg-white/10 backdrop-blur-md p-4 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-wider text-white/70">Total Laporan</span>
+            </div>
+            <p id="stat-total" class="mt-2 font-mono text-2xl font-bold tracking-tight text-white">-</p>
+          </div>
+
+          <div class="rounded-xl border border-white/15 bg-white/10 backdrop-blur-md p-4 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-wider text-amber-200">Menunggu</span>
+            </div>
+            <p id="stat-menunggu" class="mt-2 font-mono text-2xl font-bold tracking-tight text-amber-300">-</p>
+          </div>
+
+          <div class="rounded-xl border border-white/15 bg-white/10 backdrop-blur-md p-4 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-wider text-sky-200">Diteruskan</span>
+            </div>
+            <p id="stat-diteruskan" class="mt-2 font-mono text-2xl font-bold tracking-tight text-sky-300">-</p>
+          </div>
+
+          <div class="rounded-xl border border-white/15 bg-white/10 backdrop-blur-md p-4 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-wider text-emerald-200">Selesai</span>
+            </div>
+            <p id="stat-selesai" class="mt-2 font-mono text-2xl font-bold tracking-tight text-emerald-300">-</p>
+          </div>
+
+          <div class="col-span-2 sm:col-span-2 lg:col-span-1 rounded-xl border border-white/15 bg-white/10 backdrop-blur-md p-4 transition-transform hover:-translate-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-wider text-white/70">Penyelesaian</span>
+            </div>
+            <p id="stat-persen" class="mt-2 font-mono text-2xl font-bold tracking-tight text-white">0%</p>
+            <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/20">
+              <div id="stat-progress-bar" class="h-full bg-emerald-400 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content: Filter, Actions, Feed List -->
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      
+      <!-- Filter Bar (Konsisten seperti feed.html) -->
+      <section aria-labelledby="filter-heading" data-aos="fade-up" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 id="filter-heading" class="sr-only">Filter dan Pencarian Laporan</h2>
+        <div class="flex flex-col gap-4">
+          <!-- Row 1: Search Input & Views -->
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div class="relative w-full md:max-w-md">
+              <label for="q" class="sr-only">Cari laporan</label>
+              <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input id="q" type="search" placeholder="Cari nomor ID (#GIB), judul, pelapor, atau lokasi..." class="w-full rounded-lg border border-slate-300 bg-slate-50/50 py-2.5 pl-10 pr-9 text-sm placeholder:text-slate-400 transition focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <button id="q-clear" type="button" aria-label="Bersihkan pencarian" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">✕</button>
+            </div>
+
+            <!-- View Switcher & Sort -->
+            <div class="flex items-center gap-3 self-end md:self-auto">
+              <!-- Urutan Sort -->
+              <div class="flex items-center gap-2">
+                <label for="f-sort" class="font-mono text-[11px] uppercase tracking-wider text-slate-500 shrink-0">Urut:</label>
+                <select id="f-sort" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-800 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="newest">Terbaru</option>
+                  <option value="oldest">Terlama</option>
+                  <option value="title">Judul A-Z</option>
+                </select>
+              </div>
+
+              <!-- Switch Kartu / Tabel -->
+              <div class="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1 text-slate-600" role="group" aria-label="Pilihan Tampilan">
+                <button id="view-card-btn" type="button" class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold bg-white text-slate-900 shadow-xs transition" title="Tampilan Kartu">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                  Kartu
+                </button>
+                <button id="view-table-btn" type="button" class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition" title="Tampilan Tabel">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18"/></svg>
+                  Tabel
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Status Chips & Category Filter -->
+          <div class="flex flex-col gap-3 pt-2 border-t border-slate-100 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-500 mr-1">Status:</span>
+              <div role="group" aria-label="Filter status laporan" id="f-status" class="flex flex-wrap items-center gap-1.5">
+                <!-- Dynamically populated or static chips -->
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label for="f-kat" class="font-mono text-[11px] uppercase tracking-[0.15em] text-slate-500 shrink-0">Kategori:</label>
+              <div class="relative">
+                <select id="f-kat" class="fancy cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 pr-8 text-xs font-semibold text-slate-800 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15">
+                  <option value="">Semua Kategori</option>
+                  <option value="Jalan Rusak">Jalan Rusak</option>
+                  <option value="Trotoar">Trotoar</option>
+                  <option value="Saluran Air">Saluran Air</option>
+                  <option value="Lampu Jalan">Lampu Jalan</option>
+                  <option value="Kelistrikan">Kelistrikan</option>
+                  <option value="Air Bersih">Air Bersih</option>
+                  <option value="Jembatan">Jembatan</option>
+                  <option value="Rambu dan Lampu Lalu Lintas">Rambu dan Lampu Lalu Lintas</option>
+                  <option value="Sampah Umum">Sampah Umum</option>
+                  <option value="Taman dan Ruang Terbuka">Taman dan Ruang Terbuka</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Status Header & Result Count -->
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <p id="count" class="font-mono text-xs text-slate-500" aria-live="polite">Memuat data laporan...</p>
+        <div id="filter-reset-wrap" class="hidden">
+          <button id="btn-reset-filter" type="button" class="text-xs font-semibold text-primary hover:underline">
+            ✕ Bersihkan Filter
+          </button>
+        </div>
+      </div>
+
+      <!-- Container Tampilan Kartu (Grid) -->
+      <div id="container-card-view" class="mt-4">
+        <ul id="feed-admin" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Kartu dimuat melalui JavaScript -->
+        </ul>
+      </div>
+
+      <!-- Container Tampilan Tabel (Table) -->
+      <div id="container-table-view" class="mt-4 hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table class="min-w-full divide-y divide-slate-200 text-left text-xs">
+          <thead class="bg-slate-50 font-mono text-[11px] uppercase tracking-wider text-slate-600">
+            <tr>
+              <th scope="col" class="px-4 py-3.5">ID / Foto</th>
+              <th scope="col" class="px-4 py-3.5">Judul & Keterangan</th>
+              <th scope="col" class="px-4 py-3.5">Kategori & Lokasi</th>
+              <th scope="col" class="px-4 py-3.5">Pelapor & Waktu</th>
+              <th scope="col" class="px-4 py-3.5">Ubah Status</th>
+              <th scope="col" class="px-4 py-3.5 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table-body" class="divide-y divide-slate-200 bg-white">
+            <!-- Row tabel dimuat melalui JavaScript -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty" class="mt-8 hidden rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl text-slate-400">🔍</div>
+        <h3 class="mt-4 text-base font-bold text-slate-900">Tidak ada laporan yang cocok</h3>
+        <p class="mt-1 text-sm text-slate-600 max-w-sm mx-auto">Tidak ditemukan laporan sesuai filter dan kata kunci yang Anda masukkan.</p>
+        <button id="btn-empty-reset" type="button" class="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary-dark transition">
+          Reset Filter & Tampilkan Semua
+        </button>
+      </div>
+
+      <!-- Pagination / Load More -->
+      <div class="mt-10 flex justify-center">
+        <button id="more" type="button" class="rounded-md border border-slate-300 bg-white px-6 py-3 text-sm font-semibold transition-colors hover:border-primary hover:text-primary shadow-xs">
+          Muat lebih banyak
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================== MODAL KONFIRMASI HAPUS ============================== -->
+  <dialog id="modal-delete" aria-labelledby="modal-delete-title" class="m-auto w-[min(92vw,480px)] rounded-xl bg-white p-6 text-slate-900 shadow-float backdrop:bg-slate-950/60 backdrop:backdrop-blur-xs">
+    <div class="flex items-start gap-4">
+      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      </div>
+      <div class="flex-1">
+        <h3 id="modal-delete-title" class="text-base font-bold text-slate-900">Hapus Laporan Secara Permanen?</h3>
+        <p class="mt-2 text-xs leading-relaxed text-slate-600">
+          Anda akan menghapus laporan <span id="del-report-id" class="font-mono font-bold text-slate-800">#GIB-0000</span>:
+        </p>
+        <div class="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
+          <p id="del-report-title" class="font-semibold text-slate-800 line-clamp-1">-</p>
+          <p id="del-report-info" class="mt-1 text-slate-500 text-[11px]">-</p>
+        </div>
+        <p class="mt-3 text-[11px] text-red-600 font-medium">
+          ⚠️ Tindakan ini permanen. Data laporan dan dokumentasi foto akan dihapus dari server dan tidak dapat dipulihkan.
+        </p>
+      </div>
+    </div>
+    <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+      <button id="del-cancel" type="button" class="rounded-md border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">Batal</button>
+      <button id="del-confirm" type="button" class="inline-flex items-center gap-2 rounded-md bg-danger px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition">
+        <span id="del-btn-text">Ya, Hapus Sekarang</span>
+      </button>
+    </div>
+  </dialog>
+
+  <!-- ============================== MODAL DETAIL LAPORAN ============================== -->
+  <dialog id="detail" aria-labelledby="detail-title" style="overscroll-behavior: contain;" class="m-auto max-h-[90vh] w-[min(94vw,760px)] overflow-y-auto rounded-xl bg-white p-0 text-slate-900 shadow-float backdrop:bg-slate-950/60 backdrop:backdrop-blur-xs">
+    <button type="button" id="detail-close" aria-label="Tutup detail laporan" class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <div id="detail-body"></div>
+  </dialog>
+
+  <!-- ============================== TOAST NOTIFIKASI ============================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ============================== FOOTER ============================== -->
+  <footer class="mt-auto bg-primary-dark text-slate-200 border-t border-white/10">
+    <div class="mx-auto flex flex-col md:flex-row items-center justify-between gap-4 max-w-7xl px-4 py-6 sm:px-6 lg:px-8 text-xs text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="font-outfit font-semibold text-white">Reinfras Admin Portal</span>
+        <span>•</span>
+        <span>Sistem Pengaduan Kerusakan Fasilitas Umum Kota Palembang</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="./index.html" class="hover:text-white transition">Beranda</a>
+        <a href="./feed.html" class="hover:text-white transition">Feed Publik</a>
+        <a href="./laporan.html" class="hover:text-white transition">Form Laporan</a>
+        <span class="font-mono text-slate-500">© 2026 Reinfras</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./vendor/aos/aos.js"></script>
+  <script src="config.js"></script>
+
+  <script>
+    AOS.init({ duration: 800, once: true });
+
+    // STATE UTAMA
+    let REPORTS = [];
+    let curList = [];
+    let query = '';
+    let fStatus = 'semua';
+    let fKat = '';
+    let sortBy = 'newest';
+    let currentView = 'card'; // 'card' atau 'table'
+    const PAGE = 9;
+    let shown = PAGE;
+    let reportToDelete = null;
+
+    // KONSTANTA TAMPILAN
+    const DOT = {
+      'Jalan Rusak': 'rounded-full bg-danger',
+      'Trotoar': 'rounded-[2px] bg-amber-500',
+      'Saluran Air': 'rounded-full bg-blue-500',
+      'Lampu Jalan': 'rounded-full bg-yellow-400',
+      'Kelistrikan': 'rounded-[2px] bg-purple-500',
+      'Air Bersih': 'rounded-full bg-cyan-500',
+      'Jembatan': 'rotate-45 rounded-[2px] bg-warn',
+      'Rambu dan Lampu Lalu Lintas': 'rounded-[2px] bg-red-500',
+      'Sampah Umum': 'rounded-full border-2 border-info',
+      'Taman dan Ruang Terbuka': 'rounded-full bg-emerald-500',
+      'Lainnya': 'rounded-full bg-slate-400'
+    };
+
+    const STATUS_MAP = {
+      'menunggu': { label: 'Menunggu Verifikasi', code: 1, badgeClass: 'bg-amber-100 text-amber-800 border-amber-300', dot: 'bg-amber-500' },
+      'diteruskan': { label: 'Diteruskan / Diproses', code: 2, badgeClass: 'bg-sky-100 text-sky-800 border-sky-300', dot: 'bg-sky-500' },
+      'selesai': { label: 'Selesai Diperbaiki', code: 3, badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500' },
+      'ditolak': { label: 'Ditolak / Tidak Valid', code: 4, badgeClass: 'bg-red-100 text-red-800 border-red-300', dot: 'bg-red-500' }
+    };
+
+    const DINAS = {
+      'Jalan Rusak': 'Dinas PUPR Kota Palembang',
+      'Trotoar': 'Dinas PUPR / Tata Kota Kota Palembang',
+      'Saluran Air': 'Dinas PUPR / SDA Kota Palembang',
+      'Lampu Jalan': 'Dinas Perhubungan Kota Palembang',
+      'Kelistrikan': 'PT PLN (Persero) / Dinas ESDM',
+      'Air Bersih': 'PDAM Tirta Musi / Dinas PUPR',
+      'Jembatan': 'Dinas PUPR Kota Palembang',
+      'Rambu dan Lampu Lalu Lintas': 'Dinas Perhubungan Kota Palembang',
+      'Sampah Umum': 'Dinas Lingkungan Hidup Kota Palembang',
+      'Taman dan Ruang Terbuka': 'Dinas Perkim & Pertamanan',
+      'Lainnya': 'Pemerintah Kota Palembang'
+    };
+
+    const PH = '<svg class="absolute inset-0 m-auto h-7 w-7 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>';
+    const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    // TOAST NOTIFIKASI
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-700 text-white',
+        error: 'bg-danger text-white',
+        info: 'bg-slate-800 text-white'
+      };
+      const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 rounded-lg px-4 py-3 text-xs font-semibold shadow-lg transition-all transform translate-y-3 opacity-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `
+        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs">${icons[type]}</span>
+        <span class="flex-1">${esc(message)}</span>
+        <button type="button" class="text-white/70 hover:text-white p-0.5" aria-label="Tutup">✕</button>
+      `;
+
+      toast.querySelector('button').addEventListener('click', () => {
+        toast.remove();
+      });
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        if (toast.parentElement) {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    // STATISTIK LAPORAN
+    function updateMetrics() {
+      const total = REPORTS.length;
+      const menunggu = REPORTS.filter(r => r.status === 'menunggu').length;
+      const diteruskan = REPORTS.filter(r => r.status === 'diteruskan').length;
+      const selesai = REPORTS.filter(r => r.status === 'selesai').length;
+      const persen = total > 0 ? Math.round((selesai / total) * 100) : 0;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-menunggu').textContent = menunggu;
+      document.getElementById('stat-diteruskan').textContent = diteruskan;
+      document.getElementById('stat-selesai').textContent = selesai;
+      document.getElementById('stat-persen').textContent = persen + '%';
+      document.getElementById('stat-progress-bar').style.width = persen + '%';
+
+      renderStatusChips();
+    }
+
+    // RENDER FILTER STATUS CHIPS DENGAN COUNTER
+    function renderStatusChips() {
+      const container = document.getElementById('f-status');
+      const counts = {
+        'semua': REPORTS.length,
+        'menunggu': REPORTS.filter(r => r.status === 'menunggu').length,
+        'diteruskan': REPORTS.filter(r => r.status === 'diteruskan').length,
+        'selesai': REPORTS.filter(r => r.status === 'selesai').length,
+        'ditolak': REPORTS.filter(r => r.status === 'ditolak').length
+      };
+
+      const options = [
+        { key: 'semua', label: 'Semua' },
+        { key: 'menunggu', label: 'Menunggu' },
+        { key: 'diteruskan', label: 'Diteruskan' },
+        { key: 'selesai', label: 'Selesai' },
+        { key: 'ditolak', label: 'Ditolak' }
+      ];
+
+      container.innerHTML = options.map(opt => {
+        const isSelected = fStatus === opt.key;
+        const count = counts[opt.key] || 0;
+        return `
+          <button type="button" data-status="${opt.key}" class="chip-status inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${
+            isSelected 
+              ? 'border-primary bg-primary text-white shadow-xs' 
+              : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+          }">
+            <span>${opt.label}</span>
+            <span class="rounded-full px-1.5 py-0.2 font-mono text-[10px] ${
+              isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+            }">${count}</span>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.chip-status').forEach(btn => {
+        btn.addEventListener('click', () => {
+          fStatus = btn.dataset.status;
+          shown = PAGE;
+          render();
+        });
+      });
+    }
+
+    // KOMPONEN STATUS SELECTOR (Untuk Card & Table)
+    function statusSelectorHtml(r, isTable = false) {
+      return `
+        <div class="relative flex items-center">
+          <select data-action="change-status" data-id="${r.id}" class="w-full cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white py-1.5 pl-3 pr-8 font-mono text-xs font-semibold text-slate-800 transition hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 ${isTable ? 'max-w-[190px]' : ''}">
+            <option value="menunggu" ${r.status === 'menunggu' ? 'selected' : ''}>⏳ Menunggu</option>
+            <option value="diteruskan" ${r.status === 'diteruskan' ? 'selected' : ''}>⚙️ Diteruskan</option>
+            <option value="selesai" ${r.status === 'selesai' ? 'selected' : ''}>✓ Selesai</option>
+            <option value="ditolak" ${r.status === 'ditolak' ? 'selected' : ''}>✕ Ditolak</option>
+          </select>
+          <svg class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      `;
+    }
+
+    // KARTU LAPORAN (Card View)
+    function renderCard(r) {
+      const statusInfo = STATUS_MAP[r.status] || STATUS_MAP.menunggu;
+      const photoHtml = `<div class="relative flex aspect-[16/10] items-center justify-center overflow-hidden bg-slate-100 text-slate-400">
+        ${PH}
+        ${r.img ? `<img src="${r.img}" alt="Dokumentasi: ${esc(r.j)}" class="relative h-full w-full object-cover" loading="lazy" onerror="this.remove()" />` : ''}
+        <span class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-md border ${statusInfo.badgeClass} px-2.5 py-0.8 font-mono text-[10px] font-bold shadow-xs">
+          <span class="h-1.5 w-1.5 rounded-full ${statusInfo.dot}"></span>
+          ${statusInfo.label}
+        </span>
+      </div>`;
+
+      return `
+        <li>
+          <article class="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-float transition duration-200 hover:-translate-y-1">
+            ${photoHtml}
+            <div class="flex flex-1 flex-col gap-3 p-5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800">
+                  <span class="block h-2.5 w-2.5 ${DOT[r.k] || 'rounded-full bg-slate-400'}"></span>
+                  ${esc(r.k)}
+                </span>
+                <span class="font-mono text-[11px] font-bold text-primary">#${esc(r.id)}</span>
+              </div>
+
+              <h3 class="line-clamp-2 text-base font-bold text-slate-900 leading-snug">${esc(r.j)}</h3>
+              <p class="line-clamp-2 text-xs leading-relaxed text-slate-600">${esc(r.d)}</p>
+
+              <div class="space-y-1 text-xs text-slate-600">
+                <p class="truncate">📍 ${esc(r.l)}</p>
+                <div class="flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                  <span>👤 ${esc(r.p)}</span>
+                  <span>${r.t.split(',')[0]}</span>
+                </div>
+              </div>
+
+              <!-- Action Toolbar: Ubah Status & Tombol Aksi -->
+              <div class="mt-auto border-t border-slate-100 pt-3 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <label class="font-mono text-[10px] uppercase tracking-wider text-slate-500">Ubah Status:</label>
+                  <div class="flex-1 max-w-[170px]">
+                    ${statusSelectorHtml(r)}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" data-action="detail" data-id="${r.id}" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-primary hover:text-primary transition shadow-2xs">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Detail
+                  </button>
+                  <button type="button" data-action="delete" data-id="${r.id}" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </li>
+      `;
+    }
+
+    // ROW TABEL (Table View)
+    function renderTableRow(r) {
+      const statusInfo = STATUS_MAP[r.status] || STATUS_MAP.menunggu;
+      return `
+        <tr class="hover:bg-slate-50/80 transition-colors">
+          <td class="px-4 py-3 align-top whitespace-nowrap">
+            <div class="flex items-center gap-3">
+              <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-slate-200">
+                ${r.img ? `<img src="${r.img}" alt="" class="h-full w-full object-cover" onerror="this.remove()" />` : PH}
+              </div>
+              <div>
+                <span class="font-mono font-bold text-primary block">#${esc(r.id)}</span>
+                <span class="inline-flex items-center gap-1 rounded-md border ${statusInfo.badgeClass} px-2 py-0.5 font-mono text-[9px] font-bold mt-1">
+                  ${statusInfo.label}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 align-top max-w-xs">
+            <p class="font-semibold text-slate-900 line-clamp-1">${esc(r.j)}</p>
+            <p class="text-slate-500 text-[11px] line-clamp-2 mt-0.5">${esc(r.d)}</p>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-800">
+              <span class="h-2 w-2 ${DOT[r.k] || 'rounded-full bg-slate-400'}"></span>
+              ${esc(r.k)}
+            </span>
+            <p class="text-slate-500 text-[11px] truncate max-w-[200px] mt-1">📍 ${esc(r.l)}</p>
+          </td>
+          <td class="px-4 py-3 align-top whitespace-nowrap text-slate-600">
+            <p class="font-medium text-slate-800">👤 ${esc(r.p)}</p>
+            <p class="font-mono text-[10px] text-slate-400 mt-0.5">${r.t}</p>
+          </td>
+          <td class="px-4 py-3 align-top">
+            ${statusSelectorHtml(r, true)}
+          </td>
+          <td class="px-4 py-3 align-top text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-1.5">
+              <button type="button" data-action="detail" data-id="${r.id}" class="rounded-md border border-slate-300 p-1.5 text-slate-600 hover:border-primary hover:text-primary transition" title="Lihat Detail">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <button type="button" data-action="delete" data-id="${r.id}" class="rounded-md border border-red-200 bg-red-50 p-1.5 text-red-600 hover:bg-red-600 hover:text-white transition" title="Hapus Laporan">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    // MAIN RENDER FUNCTION
+    function render() {
+      const q = query.trim().toLowerCase();
+      
+      let list = REPORTS.filter(r => {
+        const matchStatus = fStatus === 'semua' || r.status === fStatus;
+        const matchKat = !fKat || r.k === fKat;
+        const matchQuery = !q || (
+          String(r.id).toLowerCase().includes(q) ||
+          r.j.toLowerCase().includes(q) ||
+          r.l.toLowerCase().includes(q) ||
+          r.p.toLowerCase().includes(q) ||
+          r.d.toLowerCase().includes(q)
+        );
+        return matchStatus && matchKat && matchQuery;
+      });
+
+      // Pengurutan (Sorting)
+      if (sortBy === 'newest') {
+        list.sort((a, b) => (b.rawDate || 0) - (a.rawDate || 0));
+      } else if (sortBy === 'oldest') {
+        list.sort((a, b) => (a.rawDate || 0) - (b.rawDate || 0));
+      } else if (sortBy === 'title') {
+        list.sort((a, b) => a.j.localeCompare(b.j));
+      }
+
+      curList = list;
+
+      // Render Status Chips & Active State
+      renderStatusChips();
+
+      // Render Grid atau Tabel
+      const visibleItems = list.slice(0, shown);
+      document.getElementById('feed-admin').innerHTML = visibleItems.map(renderCard).join('');
+      document.getElementById('table-body').innerHTML = visibleItems.map(renderTableRow).join('');
+
+      // Status counter & empty state
+      document.getElementById('count').textContent = `${list.length} dari ${REPORTS.length} laporan ditampilkan`;
+      document.getElementById('empty').classList.toggle('hidden', list.length > 0);
+      document.getElementById('more').parentElement.classList.toggle('hidden', list.length <= shown);
+
+      // Indikator reset filter
+      const hasFilter = query !== '' || fStatus !== 'semua' || fKat !== '';
+      document.getElementById('filter-reset-wrap').classList.toggle('hidden', !hasFilter);
+    }
+
+    // FITUR UTAMA 1: MENGUBAH STATUS PENGERJAAN LAPORAN (API PATCH)
+    async function updateReportStatus(reportId, newStatus) {
+      const r = REPORTS.find(x => String(x.id) === String(reportId) || String(x.mongoId) === String(reportId));
+      if (!r) return;
+
+      const previousStatus = r.status;
+      r.status = newStatus; // Optimistic update
+      render();
+      updateMetrics();
+
+      try {
+        const targetId = r.mongoId || r.id;
+        const res = await axios.patch(`${window.SERVER_URL}/laporan/${targetId}/status`, {
+          status: newStatus
+        });
+
+        if (res.data && res.data.status === 'sukses') {
+          showToast(`Status #${r.id} berhasil diubah menjadi '${STATUS_MAP[newStatus]?.label || newStatus}'`, 'success');
+        } else {
+          throw new Error(res.data?.pesan || 'Gagal mengubah status');
+        }
+      } catch (err) {
+        console.error('Error saat update status laporan:', err);
+        // Rollback state jika gagal
+        r.status = previousStatus;
+        render();
+        updateMetrics();
+        showToast(`Gagal mengubah status laporan #${r.id}: ${err.response?.data?.pesan || err.message}`, 'error');
+      }
+    }
+
+    // FITUR UTAMA 2: MENGHAPUS LAPORAN (API DELETE)
+    function openDeleteModal(reportId) {
+      const r = REPORTS.find(x => String(x.id) === String(reportId) || String(x.mongoId) === String(reportId));
+      if (!r) return;
+
+      reportToDelete = r;
+      document.getElementById('del-report-id').textContent = `#${r.id}`;
+      document.getElementById('del-report-title').textContent = r.j;
+      document.getElementById('del-report-info').textContent = `${r.k} • Pelapor: ${r.p} • ${r.l}`;
+      
+      const modal = document.getElementById('modal-delete');
+      modal.showModal();
+    }
+
+    async function executeDeleteReport() {
+      if (!reportToDelete) return;
+      const r = reportToDelete;
+      const btn = document.getElementById('del-confirm');
+      const btnText = document.getElementById('del-btn-text');
+      
+      btn.disabled = true;
+      btnText.textContent = 'Menghapus...';
+
+      try {
+        const targetId = r.mongoId || r.id;
+        const res = await axios.delete(`${window.SERVER_URL}/laporan/${targetId}`);
+
+        if (res.data && res.data.status === 'sukses') {
+          // Hapus dari list lokal
+          REPORTS = REPORTS.filter(x => String(x.id) !== String(r.id) && String(x.mongoId) !== String(r.id));
+          document.getElementById('modal-delete').close();
+          showToast(`Laporan #${r.id} berhasil dihapus dari sistem`, 'success');
+          updateMetrics();
+          render();
+        } else {
+          throw new Error(res.data?.pesan || 'Gagal menghapus laporan');
+        }
+      } catch (err) {
+        console.error('Error saat menghapus laporan:', err);
+        showToast(`Gagal menghapus laporan #${r.id}: ${err.response?.data?.pesan || err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Ya, Hapus Sekarang';
+        reportToDelete = null;
+      }
+    }
+
+    // MODAL DETAIL LAPORAN
+    function openDetail(id) {
+      const r = REPORTS.find(x => String(x.id) === String(id) || String(x.mongoId) === String(id));
+      if (!r) return;
+
+      const dlg = document.getElementById('detail');
+      const dlgBody = document.getElementById('detail-body');
+      const statusInfo = STATUS_MAP[r.status] || STATUS_MAP.menunggu;
+
+      const FASE = [
+        { n: 'Laporan Diterima Warga', t: r.t, x: `Laporan teregistrasi di sistem dengan nomor registrasi #${r.id}.` },
+        { n: `Diverifikasi & Diteruskan ke ${DINAS[r.k] || 'Pemerintah Kota Palembang'}`, t: 'Verifikasi sistem', x: 'Detail lokasi dan foto diperiksa untuk tindak lanjut petugas dinas terkait.' },
+        { n: 'Penanganan Lapangan oleh Petugas', t: 'Target 72 Jam', x: 'Tim teknis menuju ke titik lokasi infrastruktur untuk perbaikan.' },
+        { n: 'Selesai & Pemeliharaan Tuntas', t: '', x: 'Pengerjaan selesai dan diverifikasi oleh admin pengawas.' }
+      ];
+
+      const doneStep = r.status === 'menunggu' ? 1 : r.status === 'diteruskan' ? 2 : r.status === 'selesai' ? 4 : 0;
+      const timelineHtml = FASE.map((f, i) => {
+        const isDone = i < doneStep;
+        const isCurrent = i === doneStep;
+        const dot = isDone ? 'bg-primary' : isCurrent ? 'bg-warn animate-pulse' : 'bg-slate-300';
+        return `
+          <li class="relative pl-7">
+            <span class="absolute left-0 top-1 block h-3 w-3 rounded-full ${dot}"></span>
+            ${i < 3 ? '<span class="absolute bottom-[-1.25rem] left-[5px] top-4 block w-px bg-slate-200"></span>' : ''}
+            <p class="text-xs font-semibold ${isDone || isCurrent ? 'text-slate-900' : 'text-slate-400'}">${esc(f.n)}</p>
+            ${f.t ? `<p class="mt-0.5 font-mono text-[10px] text-slate-500">${esc(f.t)}</p>` : ''}
+            <p class="mt-0.5 text-[11px] leading-relaxed ${isDone || isCurrent ? 'text-slate-600' : 'text-slate-400'}">${f.x}</p>
+          </li>
+        `;
+      }).join('');
+
+      dlgBody.innerHTML = `
+        <div class="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-slate-100 text-slate-400">
+          ${PH}
+          ${r.img ? `<img src="${r.img}" alt="Dokumentasi: ${esc(r.j)}" class="relative h-full w-full object-cover" />` : ''}
+        </div>
+        <div class="flex flex-col gap-6 p-6 sm:p-8">
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+              <span class="font-bold text-primary text-sm">#${esc(r.id)}</span>
+              <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-slate-800 font-sans font-medium">
+                <span class="block h-2.5 w-2.5 ${DOT[r.k] || 'rounded-full bg-slate-400'}"></span>
+                ${esc(r.k)}
+              </span>
+            </div>
+            <h2 id="detail-title" class="text-xl font-bold leading-snug text-slate-900">${esc(r.j)}</h2>
+            <div class="flex items-center gap-2">
+              <span class="rounded-md border ${statusInfo.badgeClass} px-3 py-1 font-mono text-xs font-bold">
+                Status Saat Ini: ${statusInfo.label}
+              </span>
+            </div>
+          </div>
+
+          <!-- Bagian Cepat Ubah Status di Modal Detail -->
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <label class="block font-mono text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
+              Tindakan Cepat: Ubah Status Laporan
+            </label>
+            <div class="flex flex-wrap items-center gap-2">
+              ${['menunggu', 'diteruskan', 'selesai', 'ditolak'].map(st => `
+                <button type="button" data-modal-set-status="${st}" class="rounded-md border px-3 py-1.5 text-xs font-semibold transition ${
+                  r.status === st 
+                    ? 'bg-primary text-white border-primary shadow-xs' 
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                }">
+                  ${STATUS_MAP[st]?.label || st}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Bagian Foto Bukti Pengerjaan (Before / After) Khusus Status Selesai -->
+          ${r.status === 'selesai' ? `
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 flex flex-col gap-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h4 class="font-mono text-xs uppercase tracking-wider text-emerald-900 font-bold">Dokumentasi Perbaikan (Before / After)</h4>
+                  <p class="text-[11px] text-emerald-700">Foto bukti pengerjaan untuk laporan yang sudah selesai.</p>
+                </div>
+                <button type="button" id="btn-upload-selesai" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark transition shadow-2xs">
+                  📸 ${r.fotoSelesaiUrl ? 'Ganti Foto Bukti' : 'Unggah Foto Bukti Pengerjaan'}
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-3 pt-2 border-t border-emerald-100">
+                <figure class="flex flex-col gap-1.5">
+                  <div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-400 border border-slate-200">
+                    ${PH}
+                    ${r.img ? `<img src="${r.img}" alt="Sebelum" class="relative h-full w-full object-cover" />` : ''}
+                  </div>
+                  <figcaption class="text-[11px] font-semibold text-slate-700">Foto Sebelum (Laporan)</figcaption>
+                </figure>
+                <figure class="flex flex-col gap-1.5">
+                  <div class="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg bg-emerald-100/50 text-slate-400 border border-emerald-200">
+                    ${PH}
+                    ${r.fotoSelesaiUrl ? `<img src="${r.fotoSelesaiUrl}" alt="Sesudah" class="relative h-full w-full object-cover" />` : ''}
+                  </div>
+                  <figcaption class="text-[11px] font-semibold text-emerald-800">Foto Sesudah (Pengerjaan)</figcaption>
+                </figure>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Deskripsi -->
+          <section>
+            <h4 class="font-mono text-xs uppercase tracking-wider text-primary font-bold">Deskripsi Kerusakan</h4>
+            <p class="mt-2 rounded-lg bg-slate-50 p-4 text-xs leading-relaxed text-slate-700">${esc(r.d)}</p>
+          </section>
+
+          <!-- Informasi -->
+          <section>
+            <h4 class="font-mono text-xs uppercase tracking-wider text-primary font-bold">Informasi Rinci</h4>
+            <dl class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
+              <div class="flex flex-col gap-0.5"><dt class="text-slate-500">Pelapor</dt><dd class="font-semibold text-slate-800">${esc(r.p)}</dd></div>
+              <div class="flex flex-col gap-0.5"><dt class="text-slate-500">Waktu Dilaporkan</dt><dd class="font-semibold text-slate-800 font-mono">${esc(r.t)}</dd></div>
+              <div class="flex flex-col gap-0.5"><dt class="text-slate-500">Lokasi / Alamat</dt><dd class="font-semibold text-slate-800">${esc(r.l)}</dd></div>
+              <div class="flex flex-col gap-0.5"><dt class="text-slate-500">Koordinat GPS</dt><dd class="font-mono font-semibold text-slate-800">${esc(r.c)}</dd></div>
+              <div class="flex flex-col gap-0.5 sm:col-span-2"><dt class="text-slate-500">Dinas Penanggung Jawab</dt><dd class="font-semibold text-primary">${DINAS[r.k] || 'Pemerintah Kota Palembang'}</dd></div>
+            </dl>
+          </section>
+
+          <!-- Timeline -->
+          <section>
+            <h4 class="font-mono text-xs uppercase tracking-wider text-primary font-bold mb-3">Tahapan Pengerjaan</h4>
+            <ol class="flex flex-col gap-5">${timelineHtml}</ol>
+          </section>
+
+          <!-- Footer Modal Detail -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5">
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.c)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-md bg-slate-800 hover:bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition">
+              <span>Buka di Google Maps ➔</span>
+            </a>
+            <button type="button" data-modal-delete="${r.id}" class="inline-flex items-center gap-1.5 rounded-md bg-danger hover:bg-red-700 px-4 py-2 text-xs font-semibold text-white transition">
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+              <span>Hapus Laporan Ini</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Event listener tombol di dalam modal detail
+      dlgBody.querySelectorAll('[data-modal-set-status]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const st = btn.dataset.modalSetStatus;
+          await updateReportStatus(r.id, st);
+          openDetail(r.id); // Re-render detail modal dengan status baru
+        });
+      });
+
+      const uploadSelesaiBtn = dlgBody.querySelector('#btn-upload-selesai');
+      if (uploadSelesaiBtn) {
+        uploadSelesaiBtn.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/jpeg,image/png,image/webp';
+          input.onchange = async (e) => {
+            if (e.target.files && e.target.files[0]) {
+              const file = e.target.files[0];
+              const targetId = r.mongoId || r.id;
+              const formData = new FormData();
+              formData.append('fotoSelesai', file);
+              try {
+                const res = await axios.patch(`${window.SERVER_URL}/laporan/${targetId}/foto-selesai`, formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                if (res.data && res.data.status === 'sukses') {
+                  showToast('Foto bukti pengerjaan berhasil diunggah', 'success');
+                  await fetchReports();
+                  openDetail(r.id);
+                } else {
+                  throw new Error(res.data?.pesan || 'Gagal mengunggah foto');
+                }
+              } catch (err) {
+                console.error('Error upload foto selesai:', err);
+                showToast(`Gagal mengunggah foto bukti: ${err.response?.data?.pesan || err.message}`, 'error');
+              }
+            }
+          };
+          input.click();
+        });
+      }
+
+      const delBtnInModal = dlgBody.querySelector('[data-modal-delete]');
+      if (delBtnInModal) {
+        delBtnInModal.addEventListener('click', () => {
+          dlg.close();
+          openDeleteModal(r.id);
+        });
+      }
+
+      dlg.showModal();
+    }
+
+    // PENGAMBILAN DATA DARI BACKEND
+    async function fetchReports() {
+      const refreshBtn = document.getElementById('btn-refresh');
+      const refreshIcon = document.getElementById('refresh-icon');
+      const serverStatusText = document.getElementById('server-status-text');
+      const serverIndicator = document.getElementById('server-indicator');
+
+      if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+      try {
+        const res = await axios.get(`${window.SERVER_URL}/laporan`);
+        const json = res.data;
+
+        if (json.status === 'sukses' && Array.isArray(json.data)) {
+          REPORTS = json.data.map(item => {
+            let statusNormalized = (item.status || 'menunggu').toLowerCase();
+            if (statusNormalized === 'diterima') statusNormalized = 'menunggu';
+
+            let dateStr = 'Baru saja';
+            let rawDate = new Date();
+            if (item.createdAt) {
+              const d = new Date(item.createdAt);
+              rawDate = d;
+              const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+              const day = String(d.getDate()).padStart(2, '0');
+              const mon = months[d.getMonth()];
+              const year = d.getFullYear();
+              const hours = String(d.getHours()).padStart(2, '0');
+              const mins = String(d.getMinutes()).padStart(2, '0');
+              dateStr = `${day} ${mon} ${year}, ${hours}:${mins} WIB`;
+            }
+
+            let coordStr = '-2.9898, 104.7566';
+            if (item.koordinat && item.koordinat.latitude !== null && item.koordinat.longitude !== null && !isNaN(item.koordinat.latitude)) {
+              coordStr = `${item.koordinat.latitude}, ${item.koordinat.longitude}`;
+            } else if (item.koordinat && item.koordinat.raw) {
+              coordStr = item.koordinat.raw;
+            }
+
+            const title = item.judulLaporan || `${item.kategori || 'Kerusakan'} di ${item.alamat || 'Palembang'}`;
+            const pelapor = item.namaPelapor || 'Warga Pelapor';
+
+            return {
+              id: item.nomorLaporan || item.id || item._id,
+              mongoId: item._id || item.id,
+              t: dateStr,
+              rawDate: rawDate.getTime ? rawDate.getTime() : 0,
+              k: item.kategori || 'Lainnya',
+              j: title,
+              p: pelapor,
+              d: item.keterangan || '-',
+              l: item.alamat || 'Kota Palembang',
+              c: coordStr,
+              status: statusNormalized,
+              img: item.fotoUrl ? `${window.SERVER_URL}${item.fotoUrl}` : '',
+              fotoSelesaiUrl: item.fotoSelesaiUrl ? `${window.SERVER_URL}${item.fotoSelesaiUrl}` : ''
+            };
+          });
+
+          if (serverStatusText) serverStatusText.textContent = 'Server: Terhubung';
+          if (serverIndicator) serverIndicator.className = 'h-2 w-2 rounded-full bg-emerald-400 animate-pulse';
+          showToast(`Berhasil memuat ${REPORTS.length} laporan dari server`, 'info');
+        }
+      } catch (err) {
+        console.warn('Gagal memuat laporan dari server backend:', err);
+        if (serverStatusText) serverStatusText.textContent = 'Server: Offline/Mock';
+        if (serverIndicator) serverIndicator.className = 'h-2 w-2 rounded-full bg-amber-400';
+        showToast('Koneksi backend lambat atau offline, menampilkan data saat ini', 'info');
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+        updateMetrics();
+        render();
+      }
+    }
+
+    // EVENT LISTENERS & DELEGASI AKSI
+    function initEvents() {
+      // Delegasi Aksi pada Feed Card View & Table View
+      function handleActionClick(e) {
+        const detailBtn = e.target.closest('[data-action="detail"]');
+        if (detailBtn) {
+          openDetail(detailBtn.dataset.id);
+          return;
+        }
+
+        const deleteBtn = e.target.closest('[data-action="delete"]');
+        if (deleteBtn) {
+          openDeleteModal(deleteBtn.dataset.id);
+          return;
+        }
+      }
+
+      function handleStatusChange(e) {
+        const select = e.target.closest('[data-action="change-status"]');
+        if (select) {
+          const reportId = select.dataset.id;
+          const newStatus = select.value;
+          updateReportStatus(reportId, newStatus);
+        }
+      }
+
+      document.getElementById('feed-admin').addEventListener('click', handleActionClick);
+      document.getElementById('feed-admin').addEventListener('change', handleStatusChange);
+
+      document.getElementById('table-body').addEventListener('click', handleActionClick);
+      document.getElementById('table-body').addEventListener('change', handleStatusChange);
+
+      // Search input
+      const qInput = document.getElementById('q');
+      const qClear = document.getElementById('q-clear');
+      qInput.addEventListener('input', e => {
+        query = e.target.value;
+        qClear.classList.toggle('hidden', query.length === 0);
+        shown = PAGE;
+        render();
+      });
+
+      qClear.addEventListener('click', () => {
+        qInput.value = '';
+        query = '';
+        qClear.classList.add('hidden');
+        shown = PAGE;
+        render();
+      });
+
+      // Filter Kategori
+      document.getElementById('f-kat').addEventListener('change', e => {
+        fKat = e.target.value;
+        shown = PAGE;
+        render();
+      });
+
+      // Pengurutan (Sort)
+      document.getElementById('f-sort').addEventListener('change', e => {
+        sortBy = e.target.value;
+        render();
+      });
+
+      // Switch View (Card vs Table)
+      const cardViewBtn = document.getElementById('view-card-btn');
+      const tableViewBtn = document.getElementById('view-table-btn');
+      const cardContainer = document.getElementById('container-card-view');
+      const tableContainer = document.getElementById('container-table-view');
+
+      cardViewBtn.addEventListener('click', () => {
+        currentView = 'card';
+        cardViewBtn.className = 'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold bg-white text-slate-900 shadow-xs transition';
+        tableViewBtn.className = 'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition';
+        cardContainer.classList.remove('hidden');
+        tableContainer.classList.add('hidden');
+      });
+
+      tableViewBtn.addEventListener('click', () => {
+        currentView = 'table';
+        tableViewBtn.className = 'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold bg-white text-slate-900 shadow-xs transition';
+        cardViewBtn.className = 'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition';
+        tableContainer.classList.remove('hidden');
+        cardContainer.classList.add('hidden');
+      });
+
+      // Load More Button
+      document.getElementById('more').addEventListener('click', () => {
+        shown += PAGE;
+        render();
+      });
+
+      // Reset Filter Buttons
+      function resetAllFilters() {
+        query = '';
+        fStatus = 'semua';
+        fKat = '';
+        qInput.value = '';
+        qClear.classList.add('hidden');
+        document.getElementById('f-kat').value = '';
+        shown = PAGE;
+        render();
+      }
+      document.getElementById('btn-reset-filter').addEventListener('click', resetAllFilters);
+      document.getElementById('btn-empty-reset').addEventListener('click', resetAllFilters);
+
+      // Refresh Button
+      document.getElementById('btn-refresh').addEventListener('click', fetchReports);
+
+      // Modal Delete Events
+      document.getElementById('del-cancel').addEventListener('click', () => {
+        document.getElementById('modal-delete').close();
+        reportToDelete = null;
+      });
+      document.getElementById('del-confirm').addEventListener('click', executeDeleteReport);
+
+      // Modal Detail Close
+      const detailDlg = document.getElementById('detail');
+      document.getElementById('detail-close').addEventListener('click', () => {
+        detailDlg.close();
+      });
+      detailDlg.addEventListener('click', e => {
+        if (e.target === detailDlg) detailDlg.close();
+      });
+    }
+
+    // Inisialisasi awal
+    initEvents();
+    fetchReports();
+  </script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buat Laporan | Reinfras</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- Leafet -->
+  <link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
+  <script src="./vendor/leaflet/leaflet.js"></script>
+
+  <link href="./vendor/aos/aos.css" rel="stylesheet">
+
+  <!-- Dropdown Styling -->
+  <style>
+    select.fancy,
+    select.fancy::picker(select) {
+      appearance: base-select;
+    }
+    select.fancy::picker(select) {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.25);
+    }
+    select.fancy::picker-icon,
+    select.fancy option::checkmark {
+      display: none;
+    }
+    select.fancy option {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+    }
+    select.fancy option:hover {
+      background: #e8f0eb85;
+    }
+    select.fancy option:checked {
+      font-weight: 600;
+    }
+  </style>
+
+  <!-- Tailwind -->
+  <link rel="stylesheet" href="./output.css" />
+  <style>
+    /* ===== Menu hamburger (mobile) ===== */
+    .burger-line { display:block; height:2.5px; width:26px; border-radius:9999px; background:#fff; }
+    #mobile-menu {
+      position: fixed; inset: 0; z-index: 60; background: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity .3s ease, visibility 0s linear .3s;
+    }
+    #mobile-menu.is-open {
+      opacity: 1; visibility: visible; pointer-events: auto;
+      transition: opacity .3s ease, visibility 0s;
+    }
+    #mobile-menu li {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .35s ease, transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    #mobile-menu.is-open li { opacity: 1; transform: none; }
+    #mobile-menu.is-open li:nth-child(1) { transition-delay: .08s; }
+    #mobile-menu.is-open li:nth-child(2) { transition-delay: .14s; }
+    #mobile-menu.is-open li:nth-child(3) { transition-delay: .20s; }
+    #mobile-menu.is-open li:nth-child(4) { transition-delay: .26s; }
+    @media (prefers-reduced-motion: reduce) {
+      #mobile-menu, #mobile-menu li { transition: none !important; }
+    }
+    @media (min-width: 768px) { #mobile-menu { display: none; } }
+    @media (max-width: 767px) {
+      [data-aos="fade-left"], [data-aos="fade-right"] { transform: translate3d(0, 24px, 0); }
+    }
+  </style>
+
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
+  <!-- ============================== NAVBAR ============================== -->
+  <header data-aos="fade-down" id="navbar" class="inset-x-0 z-30 bg-white/5 backdrop-blur-lg border-b border-white/10 bg-transparent absolute">
+    <div class="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <a href="./index.html" class="flex items-center">
+        <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logo.png')"></div>
+        <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+      </a>
+
+      <div class="hidden w-full justify-center md:flex">
+        <nav aria-label="Navigasi utama" class="hidden md:block">
+          <ul class="flex items-center gap-1">
+            <li><a data-nav-link href="./index.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Beranda</a></li>
+            <li><a data-nav-link href="./feed.html" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Feed Laporan</a></li>
+            <li><a data-nav-link href="./laporan.html" class="block rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white">Kirim Laporan</a></li>
+            <li><a data-nav-link href="#kontak" class="block rounded-md px-3 py-2 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white">Kontak Kami</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Tombol hamburger (hanya tampil di mobile) -->
+      <button id="menu-toggle" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="mobile-menu"
+        class="ml-auto flex h-11 w-11 shrink-0 cursor-pointer flex-col items-center justify-center gap-[5px] rounded-full md:hidden">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================== MENU MOBILE (OVERLAY) ============================== -->
+  <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu navigasi" aria-hidden="true" inert>
+    <button id="menu-close" type="button" aria-label="Tutup menu"
+      class="absolute right-4 top-6 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-slate-200/80 text-slate-700 transition-colors hover:bg-slate-300 sm:right-6">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+    <nav aria-label="Navigasi seluler">
+      <ul class="flex flex-col items-center gap-9 text-center">
+        <li><a data-mobile-link href="./index.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Beranda</a></li>
+        <li><a data-mobile-link href="./feed.html" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Feed Laporan</a></li>
+        <li><a data-mobile-link href="./laporan.html" class="font-outfit text-[2rem] font-semibold leading-tight text-primary">Kirim Laporan</a></li>
+        <li><a data-mobile-link href="#kontak" class="font-outfit text-[2rem] font-semibold leading-tight text-black transition-colors hover:text-primary">Kontak Kami</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- HERO -->
+  <section aria-labelledby="hero-title" class="relative flex h-fit w-full items-end bg-slate-900 bg-cover bg-center text-white" style="background-image: url('https://images.unsplash.com/photo-1565008447742-97f6f38c985c?q=80&w=1331&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D');">
+    <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/60 to-slate-950/30"></div>
+    <div class="relative mx-auto w-full max-w-6xl px-4 pb-12 pt-32 sm:px-6 lg:px-8">
+      <nav data-aos="fade-right" aria-label="Breadcrumb" class="text-xs text-white/70"><a href="./index.html" class="hover:text-white">Beranda</a> <span aria-hidden="true">/</span> <span class="font-semibold text-white">Lapor Sekarang</span></nav>
+      <div class="mt-6 flex flex-wrap items-end justify-between gap-8">
+        <div data-aos="fade-right" class="max-w-2xl">
+          <h1 id="hero-title" class="text-4xl font-extrabold leading-[1.2] tracking-tight sm:text-5xl">Kirim Foto, Tandai Lokasi, Dan Kirim Laporanmu!.</h1>
+          <p class="mt-4 max-w-xl text-sm leading-relaxed text-white/80">Satu laporan singkat dari kamu membantu petugas menemukan dan memperbaiki kerusakan lebih cepat.</p>
+        </div>
+        <div data-aos="fade-left" class="flex items-center gap-4 rounded-md border border-white/15 bg-white/10 px-5 py-3 backdrop-blur-lg">
+          <span id="report-count-week" class="text-3xl font-extrabold tracking-tight">0</span>
+          <span class="text-xs leading-snug text-white/80">laporan masuk<br>minggu ini</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main data-aos="fade-up" class="mx-auto flex flex-col min-h-screen max-w-6xl items-center px-4 py-10">
+    <section class="grid w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.08)] lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+
+      <!-- Kolom form -->
+      <form class="min-w-0 p-6 sm:p-10" id="reportForm">
+        <p class="font-mono text-[11px] tracking-[0.2em] text-slate-500">FORM PENGADUAN</p>
+        <h1 class="mt-3 text-3xl font-extrabold tracking-tight">Buat Laporan Pengaduan.</h1>
+       
+        <!-- Nama Pelapor -->
+        <div class="mt-6">
+          <label for="namaPelapor" class="mb-1.5 block text-xs font-semibold text-slate-700">Nama Pelapor</label>
+          <input required id="namaPelapor" name="namaPelapor" type="text" placeholder="Nama lengkap sesuai identitas"
+                 class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm placeholder:text-slate-400 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15">
+        </div>
+
+        <!-- Judul Laporan -->
+        <div class="mt-5">
+          <label for="judulLaporan" class="mb-1.5 block text-xs font-semibold text-slate-700">Judul Laporan</label>
+          <input required id="judulLaporan" name="judulLaporan" type="text" placeholder="Contoh: Jalan berlubang di depan jembatan"
+                 class="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm placeholder:text-slate-400 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15">
+        </div>
+
+        <!-- 1. Foto -->
+        <div class="mt-8">
+          <label for="foto" class="mb-1.5 block text-xs font-semibold text-slate-700">Bukti Foto</label>
+          <label id="dragNdrop" for="foto"
+                 class="group aspect-[16/9] relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-9 text-center transition hover:border-primary hover:bg-primary-soft/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/15">
+            <input required id="foto" name="foto" type="file" accept="image/*" class="absolute inset-0 h-full w-full cursor-pointer opacity-0">
+            <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-soft text-primary transition group-hover:bg-white">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+              </svg>
+            </span>
+            <span class="mt-4 text-sm font-semibold">Tarik foto ke sini, atau <span class="text-primary underline underline-offset-2">pilih dari perangkat</span></span>
+            <span class="mt-1 text-xs text-slate-500">JPG, PNG, atau WEBP. Format Landscape. Maksimal 5 MB.</span>
+            <div id="preview" class="pointer-events-none bg-contain bg-center bg-no-repeat w-full h-full absolute bg-transparent"></div>
+          </label> 
+        </div>
+
+        <!-- 2. Posisi -->
+        <div class="mt-5">
+          <span class="mb-1.5 block text-xs font-semibold text-slate-700">Posisi Langsung</span>
+          <div class="flex flex-col gap-2">
+            <button type="button" id="btn-posisi" onclick="toggleMap()"
+                    class="flex w-full items-center gap-3 rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-left transition hover:border-primary hover:bg-primary-soft/40 focus:outline-none focus:ring-4 focus:ring-primary/15 focus:border-primary">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>
+                </svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <!-- Ganti teks di bawah dengan nama lokasi dari Google Maps API -->
+                <span id="nama-lokasi" class="w-full block truncate text-sm font-medium text-slate-500">Pilih lokasi di peta</span>
+                <span id="koordinat-lokasi" class="mt-0.5 block truncate font-mono text-[11px] text-slate-400">Koordinat belum dipilih</span>
+              </span>
+              <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+
+            <button type="button" id="btn-lokasi-saya"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary-soft/60 px-3.5 py-2.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white focus:outline-none focus:ring-4 focus:ring-primary/15">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+              </svg>
+              Gunakan Lokasi Saya Saat Ini
+            </button>
+          </div>
+          <input type="hidden" name="latitude" id="latitude">
+          <input type="hidden" name="longitude" id="longitude">
+        </div>
+
+        <!-- 4. Kategori -->
+        <div class="mt-5">
+          <label for="kategori" class="mb-1.5 block text-xs font-semibold text-slate-700">Kategori Kerusakan</label>
+          <div class="relative">
+            <select id="kategori" name="kategori" required
+                    class="fancy cursor-pointer w-full rounded-lg border border-slate-300 px-3.5 py-3 pr-10 text-sm text-slate-900 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 invalid:text-slate-400">
+              <option value="" disabled selected hidden>Pilih jenis kerusakan</option>
+              <option value="Jalan Rusak" class="text-slate-900">Jalan Rusak</option>
+              <option value="Trotoar" class="text-slate-900">Trotoar</option>
+              <option value="Saluran Air" class="text-slate-900">Saluran Air</option>
+              <option value="Lampu Jalan" class="text-slate-900">Lampu Jalan</option>
+              <option value="Kelistrikan" class="text-slate-900">Kelistrikan</option>
+              <option value="Air Bersih" class="text-slate-900">Air Bersih</option>
+              <option value="Jembatan" class="text-slate-900">Jembatan</option>
+              <option value="Rambu dan Lampu Lalu Lintas" class="text-slate-900">Rambu dan Lampu Lalu Lintas</option>
+              <option value="Sampah Umum" class="text-slate-900">Sampah Umum</option>
+              <option value="Taman dan Ruang Terbuka" class="text-slate-900">Taman dan Ruang Terbuka</option>
+              <option value="Lainnya" class="text-slate-900">Lainnya</option>
+            </select>
+            <svg class="absolute pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <!-- 3. Keterangan -->
+        <div class="mt-5">
+          <label for="keterangan" class="mb-1.5 block text-xs font-semibold text-slate-700">Keterangan Kerusakan</label>
+          <textarea required spellcheck="false" id="keterangan" name="keterangan" rows="5" placeholder="Jelaskan kondisi kerusakan dan patokan lokasi secara rinci"
+                    class="w-full resize-y rounded-lg border border-slate-300 bg-white px-3.5 py-3 text-sm placeholder:text-slate-400 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"></textarea>
+        </div>
+
+        <button id="submit-button" type="submit"
+                class="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3.5 text-sm font-bold text-white transition hover:bg-primary-dark focus:outline-none focus:ring-4 focus:ring-primary/30 sm:w-auto sm:min-w-[220px]">
+          Kirim Laporan
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+      </button>
+      </form>
+
+      <!-- Kolom info -->
+      <aside class="min-w-0 bg-slate-800 p-6 text-slate-100 sm:p-10">
+        <p class="font-mono text-[11px] tracking-[0.2em] text-slate-400">PANDUAN PELAPORAN</p>
+        <p class="mt-3 text-lg font-bold leading-snug">Laporan yang jelas lebih cepat ditangani dinas.</p>
+
+        <dl class="mt-8 divide-y divide-white/10 border-y border-white/10">
+          <div class="py-4">
+            <dt class="font-mono text-[11px] tracking-[0.15em] text-slate-400">FOTO</dt>
+            <dd class="mt-1.5 text-sm font-medium leading-relaxed text-white/90">Ambil dari jarak dekat dan satu foto dari jauh agar kerusakan dan sekitarnya terlihat.</dd>
+          </div>
+          <div class="py-4">
+            <dt class="font-mono text-[11px] tracking-[0.15em] text-slate-400">POSISI</dt>
+            <dd class="mt-1.5 text-sm font-medium leading-relaxed text-white/90">Tandai titik tepat di peta supaya petugas langsung menemukan lokasinya.</dd>
+          </div>
+          <div class="py-4">
+            <dt class="font-mono text-[11px] tracking-[0.15em] text-slate-400">KETERANGAN</dt>
+            <dd class="mt-1.5 text-sm font-medium leading-relaxed text-white/90">Sebutkan ukuran kerusakan dan apakah membahayakan pengguna jalan atau fasilitas.</dd>
+          </div>
+          <div class="py-4">
+            <dt class="font-mono text-[11px] tracking-[0.15em] text-slate-400">BANTUAN</dt>
+            <dd class="mt-1.5 text-sm font-medium text-white/90">info@palembang.go.id</dd>
+          </div>
+        </dl>
+      </aside>
+    </section>
+  </main>
+
+  <!-- ============================== TIER 6: ADMINISTRATIVE FOOTER ============================== -->
+  <footer data-aos="fade-up" class="bg-primary text-slate-100">
+    <div class="flex flex-col md:flex-row justify-between mx-auto w-fit max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <a href="./index.html" class="flex items-center">
+          <div class="h-[2.5rem] aspect-video bg-cover bg-center bg-size-[4rem] bg-no-repeat" style="background-image: url('./assets/logoWhite.png')"></div>
+          <span data-nav-text class="font-outfit text-xl font-semibold text-white">
+          Reinfras
+        </span>
+        </a>
+        <p class="text-sm leading-relaxed text-slate-400">Sistem pelaporan infrastruktur dan tata kelola lahan basah terpadu Kota Palembang, Sumatera Selatan.</p>
+      </div>
+      <div class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 id="kontak" class="scroll-mt-20 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Kontak Kami</h2>
+        <ul class="flex flex-col gap-3 text-sm text-slate-300">
+          <li>Jl. Pangeran Sido Ing Lautan, 35 Ilir, Kec. Ilir Bar. II, Kota Palembang, Sumatera Selatan 30131</li>
+          <li>+62 123 456 789</li>
+          <li>pengaduan@reinfras.com</li>
+        </ul>
+      </div>
+      <nav aria-label="Tautan footer" class="flex flex-col gap-4 md:max-w-[30%]">
+        <h2 class="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Tautan</h2>
+        <ul class="flex flex-col gap-3 text-sm">
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./index.html#tentang" class="text-slate-300 transition-colors hover:text-white">Tentang Kami</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./index.html#hasil" class="text-slate-300 transition-colors hover:text-white">Hasil Nyata</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./feed.html" class="text-slate-300 transition-colors hover:text-white">Laporan Terkini</a>
+          </li>
+          <li class="flex items-center">
+            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+            <a href="./laporan.html" class="text-slate-300 transition-colors hover:text-white">Buat Laporan</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="mx-auto flex border-t-2 border-white/15 max-w-6xl">
+      <p class="mx-auto max-w-6xl px-4 py-5 text-xs text-slate-400 sm:px-6 lg:px-8">
+        © 2026 Reinfras. Semua hak dilindungi undang-undang.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Map Popup -->
+  <div id="mapCard" class="hidden fixed top-0 left-0 h-full w-full bg-black/20 backdrop-blur-xs">
+    <div id="map" class="m-auto rounded-xl h-[80%] w-[80%] border-4 border-white"></div>
+  </div>
+
+  <!-- Script Visual -->
+  <script src="./vendor/aos/aos.js"></script>
+  <script src="./vendor/lenis/lenis.min.js"></script>
+  <script>
+    // TOGGLE MAP POPUP
+    const mapCard = document.getElementById("mapCard");
+    function toggleMap (){
+      if(mapCard.style.display == "flex"){
+        mapCard.style.display = "none";
+      }else{
+        mapCard.style.display = "flex";
+      }
+    }
+
+    // RESIZE HANDLER
+    new ResizeObserver(() => map && map.invalidateSize()).observe(document.getElementById('map'));
+
+    // INISIALISASI MAP
+    var map = L.map('map').setView([-2.9898965233218524,104.75655926340383], 13);
+    map.attributionControl.setPrefix(false);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    
+    // map.locate({
+    //   setView: true,     // otomatis pindah ke lokasi pengguna
+    //   maxZoom: 17,       // batas zoom saat berpindah
+    // });
+
+    // HEHEHEHAW
+    window.dox = [];
+    map.on('locationfound', (e) => {
+      const { lat, lng } = e.latlng;
+      const akurasi = e.accuracy;
+
+      window.dox.push(lat);
+      window.dox.push(lng);
+      window.dox.push(akurasi);
+    });
+
+    // SAAT MAP DI KLIK
+    const koorLokasi = document.getElementById("koordinat-lokasi");
+    const namaLokasi = document.getElementById("nama-lokasi");
+    window.koordinat = [];
+    window.alamat =[];
+
+    async function onMapClick(e) {
+      const { lat, lng } = e.latlng;
+
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=id`);
+        const data = await res.json();
+
+        const semuaData = [
+          data.display_name,
+          data.address?.road,
+          data.address?.suburb,
+          data.address?.city_district
+        ];
+
+        for (const item of semuaData) {
+          if (item !== undefined) {
+            window.alamat.push(item);
+          }
+        }
+        
+      } catch (err) {
+        console.error('Gagal mengambil alamat', err);
+      }
+
+      koorLokasi.innerHTML = `Lintang: ${lat}, Bujur: ${lng}`;
+      window.koordinat.push(lat);
+      window.koordinat.push(lng);
+      if(window.alamat != ""){
+        namaLokasi.innerHTML = window.alamat;
+      }
+
+      toggleMap();
+    }
+    map.on('click', onMapClick);
+    
+    // INISIALISASI AOS
+    AOS.init({duration: 1200});
+
+    // INISIALISASI LENIS
+    const lenis = new Lenis({
+      duration: 1.2,
+      smoothWheel: true,
+      wheelMultiplier: 1.2,
+      syncTouch: true,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    // DRAG N DROP
+    const foto = document.getElementById("foto");
+    const preview = document.getElementById("preview");
+
+    let urlLama = null;
+
+    foto.addEventListener('change', () => {
+      const file = foto.files[0];
+      if (!file) return;
+
+      // bebaskan memori dari gambar sebelumnya
+      if (urlLama) URL.revokeObjectURL(urlLama);
+
+      urlLama = URL.createObjectURL(file);
+      preview.style.backgroundImage = `url("${urlLama}")`;
+      preview.style.backgroundColor = "oklch(98.5% 0 none)";
+    });
+  </script>
+  <script>
+    // Menu hamburger mobile
+    (function () {
+      const menu = document.getElementById('mobile-menu');
+      const openBtn = document.getElementById('menu-toggle');
+      const closeBtn = document.getElementById('menu-close');
+      const desktop = window.matchMedia('(min-width: 768px)');
+
+      function setMenu(open) {
+        menu.classList.toggle('is-open', open);
+        menu.setAttribute('aria-hidden', String(!open));
+        menu.inert = !open;
+        openBtn.setAttribute('aria-expanded', String(open));
+        document.documentElement.style.overflow = open ? 'hidden' : '';
+        if (typeof lenis !== 'undefined') open ? lenis.stop() : lenis.start();
+        (open ? closeBtn : openBtn).focus({ preventScroll: true });
+      }
+
+      openBtn.addEventListener('click', () => setMenu(true));
+      closeBtn.addEventListener('click', () => setMenu(false));
+      menu.querySelectorAll('[data-mobile-link]').forEach((a) =>
+        a.addEventListener('click', () => setMenu(false))
+      );
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menu.classList.contains('is-open')) setMenu(false);
+      });
+      desktop.addEventListener('change', (e) => {
+        if (e.matches && menu.classList.contains('is-open')) setMenu(false);
+      });
+    })();
+  </script>
+  <script src="config.js"></script>
+  <script>
+    async function loadWeeklyCount() {
+      try {
+        const res = await fetch(`${window.SERVER_URL}/laporan`);
+        const text = await res.text();
+        if (text.trim().startsWith('<')) {
+          console.warn('Gagal memuat statistik mingguan: Server mengembalikan HTML (kemungkinan URL server/tunnel salah atau offline).');
+          return;
+        }
+        const json = JSON.parse(text);
+        if (json.status === 'sukses' && typeof json.totalMingguIni === 'number') {
+          document.getElementById('report-count-week').textContent = json.totalMingguIni;
+        }
+      } catch (err) {
+        console.warn('Gagal memuat statistik mingguan:', err);
+      }
+    }
+    loadWeeklyCount();
+  </script>
+  <!-- Modal Status Pengiriman (Loading, Sukses, & Error) -->
+  <div id="statusModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl transition-all text-center">
+      <div id="statusModalLoading" class="flex flex-col items-center">
+        <svg class="animate-spin h-10 w-10 text-primary mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <h3 class="text-lg font-bold text-slate-900">Laporan sedang dikirim</h3>
+        <p class="text-xs text-slate-500 mt-1">Mohon tunggu sebentar...</p>
+      </div>
+      <div id="statusModalSuccess" class="hidden flex-col items-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 mb-4">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">Laporan diterima</h3>
+        <p class="text-xs text-slate-500 mt-1">Terima kasih telah berpartisipasi!</p>
+      </div>
+      <div id="statusModalError" class="hidden flex-col items-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600 mb-4">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </div>
+        <h3 id="statusModalErrorTitle" class="text-lg font-bold text-slate-900">Gagal Mengirim Laporan</h3>
+        <p id="statusModalErrorText" class="text-xs text-slate-500 mt-1">Terjadi kesalahan. Periksa koneksi Anda dan coba lagi.</p>
+        <button type="button" onclick="window.hideStatusModal ? window.hideStatusModal() : document.getElementById('statusModal').classList.add('hidden')" class="mt-5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary-dark cursor-pointer">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="laporan.js"></script>
+</body>
+</html>
