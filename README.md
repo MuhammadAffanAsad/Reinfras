@@ -1,4 +1,4 @@
-# Reinfras
+# Reinfras**[visit](https://reinfras.vercel.app)**
 Platform pelaporan kerusakan infrastruktur dan fasilitas umum yang cepat, transparan, dan dapat dipantau secara real-time.
 
 Reinfras memungkinkan masyarakat melaporkan kerusakan fasilitas umum dan isu lingkungan lengkap dengan bukti foto serta koordinat lokasi. Setiap laporan diteruskan kepada dinas terkait dan progres penanganannya dapat dipantau secara terbuka hingga masalah terselesaikan.
@@ -19,5 +19,5 @@ Reinfraas bekerja dengan 4 tahapan sederhana:
 3. **Pantau**: Pengguna dan masyarakat umum memantau status penanganan melalui feed laporan.
 4. **Selesai**: Setelah ditangani, foto *before–after* dipublikasikan di halaman beranda.
 
-## Demo
-Kunjungi: **[reinfras.vercel.app](https://reinfras.vercel.app)**
+### Demo
+Kunjungi live demo kami di: **[reinfras.vercel.app](https://reinfras.vercel.app)**
