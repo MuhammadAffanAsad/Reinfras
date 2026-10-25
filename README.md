@@ -1,5 +1,5 @@
 # Reinfras
-**Platform pelaporan kerusakan infrastruktur dan fasilitas umum yang cepat, transparan, dan dapat dipantau secara real-time.**
+Platform pelaporan kerusakan infrastruktur dan fasilitas umum yang cepat, transparan, dan dapat dipantau secara real-time.
 
 Reinfras memungkinkan masyarakat melaporkan kerusakan fasilitas umum dan isu lingkungan lengkap dengan bukti foto serta koordinat lokasi. Setiap laporan diteruskan kepada dinas terkait dan progres penanganannya dapat dipantau secara terbuka hingga masalah terselesaikan.
 
@@ -25,6 +25,3 @@ Didukung berbagai lapisan sistem keamanan, server mampu menghadapi ancaman siber
 
 ## Demo
 Kunjungi: **[reinfras.vercel.app](https://reinfras.vercel.app)**
-
-
-<p align="center">Dibuat oleh tim Reinfras untuk infrastruktur yang lebih baik.</p>
